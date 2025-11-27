@@ -1,0 +1,34 @@
+# Dependências
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Variáveis de ambiente (IMPORTANTE - contém senhas!)
+.env
+.env.local
+.env.production
+
+# Build de produção
+dist/
+build/
+.next/
+
+# IDEs
+.vscode/
+.idea/
+
+# Sistema operacional
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Banco de dados local (se usar)
+*.sqlite
+*.db
+
+# Prisma
+prisma/migrations/*_migration.sql
