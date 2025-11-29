@@ -1,0 +1,186 @@
+// Configuração do Prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url = env("DATABASE_URL")
+}
+
+// ========================================
+// MODELO DE DADOS - E-COMMERCE AUTOMOTIVO
+// ========================================
+
+// Usuários (clientes e administradores)
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  name      String
+  password  String
+  role      String   @default("customer") // "customer" ou "admin"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  orders    Order[]
+  cart      CartItem[]
+  wishlist  Wishlist[]
+
+  @@map("users")
+}
+
+// Categorias de produtos
+model Category {
+  id          String   @id @default(uuid())
+  name        String   @unique
+  slug        String   @unique
+  description String?
+  imageUrl    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  products Product[]
+
+  @@map("categories")
+}
+
+// Produtos (peças automotivas)
+model Product {
+  id          String   @id @default(uuid())
+  name        String
+  slug        String   @unique
+  description String?
+  price       Float
+  salePrice   Float?
+  stock       Int      @default(0)
+  sku         String   @unique
+  imageUrl    String?
+  categoryId  String
+  isActive    Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  category         Category           @relation(fields: [categoryId], references: [id])
+  orderItems       OrderItem[]
+  cartItems        CartItem[]
+  wishlistItems    Wishlist[]
+  compatibilities  VehicleCompatibility[]
+  reviews          Review[]
+
+  @@map("products")
+}
+
+// Veículos (marcas, modelos, anos)
+model Vehicle {
+  id        String   @id @default(uuid())
+  make      String   // Marca (ex: Ford, Chevrolet)
+  model     String   // Modelo (ex: Mustang, Camaro)
+  year      Int      // Ano
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  compatibilities VehicleCompatibility[]
+
+  @@unique([make, model, year])
+  @@map("vehicles")
+}
+
+// Compatibilidade de peças com veículos
+model VehicleCompatibility {
+  id        String   @id @default(uuid())
+  productId String
+  vehicleId String
+  createdAt DateTime @default(now())
+
+  // Relações
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, vehicleId])
+  @@map("vehicle_compatibilities")
+}
+
+// Pedidos
+model Order {
+  id          String   @id @default(uuid())
+  userId      String
+  status      String   @default("pending") // pending, processing, shipped, delivered, cancelled
+  total       Float
+  shippingFee Float    @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  // Relações
+  user       User        @relation(fields: [userId], references: [id])
+  orderItems OrderItem[]
+
+  @@map("orders")
+}
+
+// Itens do pedido
+model OrderItem {
+  id        String   @id @default(uuid())
+  orderId   String
+  productId String
+  quantity  Int
+  price     Float
+  createdAt DateTime @default(now())
+
+  // Relações
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+// Carrinho de compras
+model CartItem {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  quantity  Int      @default(1)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@map("cart_items")
+}
+
+// Lista de desejos (wishlist)
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  // Relações
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+
+  @@unique([userId, productId])
+  @@map("wishlist")
+}
+
+// Avaliações de produtos
+model Review {
+  id        String   @id @default(uuid())
+  productId String
+  userName  String
+  rating    Int      // 1 a 5 estrelas
+  comment   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relações
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("reviews")
+}
