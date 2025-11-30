@@ -8,31 +8,40 @@ const prisma = new PrismaClient();
 /**
  * Registrar novo usuário
  */
-export async function register(req: Request, res: Response) {
+export async function register(req: Request, res: Response): Promise<void> {
   try {
-    const { email, name, password } = req.body;
+    const { name, email, password } = req.body;
 
-    // Verificar se o email já existe
+    // Verificar se usuário já existe
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
 
     if (existingUser) {
-      return res.status(400).json({
-        error: "Email já cadastrado",
+      res.status(400).json({
+        success: false,
+        message: "Email já cadastrado",
       });
+      return;
     }
 
-    // Hash da senha
+    // Criptografar senha
     const hashedPassword = await hashPassword(password);
 
     // Criar usuário
     const user = await prisma.user.create({
       data: {
-        email,
         name,
+        email,
         password: hashedPassword,
         role: "customer",
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        role: true,
+        createdAt: true,
       },
     });
 
@@ -43,27 +52,27 @@ export async function register(req: Request, res: Response) {
       role: user.role,
     });
 
-    // Retornar usuário (sem a senha!)
     res.status(201).json({
-      message: "Usuário criado com sucesso",
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+      success: true,
+      message: "Usuário cadastrado com sucesso",
+      data: {
+        user,
+        token,
       },
-      token,
     });
   } catch (error) {
-    console.error("Erro no registro:", error);
-    res.status(500).json({ error: "Erro ao criar usuário" });
+    console.error("Erro ao registrar usuário:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro ao cadastrar usuário",
+    });
   }
 }
 
 /**
  * Login de usuário
  */
-export async function login(req: Request, res: Response) {
+export async function login(req: Request, res: Response): Promise<void> {
   try {
     const { email, password } = req.body;
 
@@ -73,18 +82,22 @@ export async function login(req: Request, res: Response) {
     });
 
     if (!user) {
-      return res.status(401).json({
-        error: "Email ou senha inválidos",
+      res.status(401).json({
+        success: false,
+        message: "Email ou senha inválidos",
       });
+      return;
     }
 
     // Verificar senha
-    const validPassword = await comparePassword(password, user.password);
+    const isPasswordValid = await comparePassword(password, user.password);
 
-    if (!validPassword) {
-      return res.status(401).json({
-        error: "Email ou senha inválidos",
+    if (!isPasswordValid) {
+      res.status(401).json({
+        success: false,
+        message: "Email ou senha inválidos",
       });
+      return;
     }
 
     // Gerar token
@@ -95,47 +108,69 @@ export async function login(req: Request, res: Response) {
     });
 
     res.json({
+      success: true,
       message: "Login realizado com sucesso",
-      user: {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-        role: user.role,
+      data: {
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          role: user.role,
+        },
+        token,
       },
-      token,
     });
   } catch (error) {
-    console.error("Erro no login:", error);
-    res.status(500).json({ error: "Erro ao fazer login" });
+    console.error("Erro ao fazer login:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro ao fazer login",
+    });
   }
 }
 
 /**
  * Obter dados do usuário logado
  */
-export async function getMe(req: Request, res: Response) {
+export async function getMe(req: Request, res: Response): Promise<void> {
   try {
-    // O middleware já validou o token e colocou o userId no req
-    const userId = (req as any).userId;
+    if (!req.user) {
+      res.status(401).json({
+        success: false,
+        message: "Não autenticado",
+      });
+      return;
+    }
 
     const user = await prisma.user.findUnique({
-      where: { id: userId },
+      where: { id: req.user.userId },
       select: {
         id: true,
-        email: true,
         name: true,
+        email: true,
         role: true,
         createdAt: true,
+        updatedAt: true,
       },
     });
 
     if (!user) {
-      return res.status(404).json({ error: "Usuário não encontrado" });
+      res.status(404).json({
+        success: false,
+        message: "Usuário não encontrado",
+      });
+      return;
     }
 
-    res.json({ user });
+    res.json({
+      success: true,
+      data: { user },
+    });
   } catch (error) {
     console.error("Erro ao buscar usuário:", error);
-    res.status(500).json({ error: "Erro ao buscar dados do usuário" });
+    res.status(500).json({
+      success: false,
+      message: "Erro ao buscar dados do usuário",
+    });
   }
 }

@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
+import { setupSecurity } from "./config/security";
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -10,20 +11,9 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ========================================
+// ============================================
 // MIDDLEWARES GLOBAIS
-// ========================================
-
-// Segurança HTTP
-app.use(helmet());
-
-// CORS - permitir requisições do frontend
-app.use(
-  cors({
-    origin: process.env.FRONTEND_URL || "http://localhost:5173",
-    credentials: true,
-  })
-);
+// ============================================
 
 // Parser de JSON
 app.use(express.json());
@@ -31,9 +21,12 @@ app.use(express.json());
 // Parser de URL encoded
 app.use(express.urlencoded({ extended: true }));
 
-// ========================================
+// Configurar segurança (Helmet, CORS, Rate Limit)
+setupSecurity(app);
+
+// ============================================
 // ROTAS
-// ========================================
+// ============================================
 
 // Rota de health check
 app.get("/health", (req, res) => {
@@ -55,9 +48,9 @@ app.use((req, res) => {
   });
 });
 
-// ========================================
+// ============================================
 // INICIAR SERVIDOR
-// ========================================
+// ============================================
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);

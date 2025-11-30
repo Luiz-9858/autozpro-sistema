@@ -27,9 +27,6 @@ export function setupSecurity(app: Express): void {
   // ============================================
   // 2. CORS - Controle de Acesso entre Domínios
   // ============================================
-  // ============================================
-  // 2. CORS - Controle de Acesso entre Domínios
-  // ============================================
   const allowedOrigins = [
     "http://localhost:3000", // Frontend local React
     "http://localhost:5173", // Frontend local Vite
