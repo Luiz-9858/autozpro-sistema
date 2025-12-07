@@ -3,6 +3,7 @@ import cors from "cors";
 import helmet from "helmet";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
+import productRoutes from "./routes/productRoutes";
 import { setupSecurity } from "./config/security";
 
 // Carregar variáveis de ambiente
@@ -39,6 +40,9 @@ app.get("/health", (req, res) => {
 
 // Rotas de autenticação
 app.use("/api/auth", authRoutes);
+
+// Rotas de produtos
+app.use("/api/products", productRoutes);
 
 // Rota 404 - não encontrado
 app.use((req, res) => {
