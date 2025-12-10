@@ -3,6 +3,10 @@ import { hashPassword } from "../src/utils/hash";
 
 const prisma = new PrismaClient();
 
+// ← ADICIONE ESTAS LINHAS:
+console.log("🔍 Arquivo seed.ts carregado!");
+console.log("🔍 PrismaClient criado!");
+
 async function main() {
   console.log("🌱 Iniciando seed do banco de dados...");
 
