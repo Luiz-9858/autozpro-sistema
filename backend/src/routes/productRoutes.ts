@@ -37,6 +37,7 @@ router.get("/:id", getProduct);
  * Criar novo produto
  * Requer: autenticação + role admin
  */
+console.log("📦 Registrando rota POST /api/products");
 router.post("/", authenticate, requireAdmin, createProduct);
 
 /**
