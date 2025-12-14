@@ -23,9 +23,8 @@ export function authenticate(
 ): void {
   try {
     // Extrair token do header Authorization
-    console.log("🔑 req.headers.authorization:", req.headers.authorization);
+
     const token = extractTokenFromHeader(req.headers.authorization);
-    console.log("🔑 Token extraído:", token);
 
     if (!token) {
       res.status(401).json({
@@ -37,8 +36,6 @@ export function authenticate(
 
     // Verificar e decodificar o token
     const decoded = verifyToken(token);
-    console.log("🔍 Tipo de decoded:", typeof decoded); // ADICIONE TEMPORÁRIO
-    console.log("🔍 Decoded:", decoded); // ADICIONE TEMPORÁRIO
 
     if (!decoded) {
       res.status(401).json({
@@ -50,11 +47,8 @@ export function authenticate(
 
     // Adicionar dados do usuário ao request
     req.user = decoded;
-    console.log("req.user DEFINIDO:", req.user);
-    console.log("🚀 VAI CHAMAR next()..."); // ADICIONE ESTA LINHA
     // Continuar para a próxima função
     next();
-    console.log("🚀 next() FOI CHAMADO!"); // ADICIONE ESTA LINHA
   } catch (error) {
     res.status(500).json({
       success: false,
@@ -71,9 +65,6 @@ export function requireAdmin(
   res: Response,
   next: NextFunction
 ): void {
-  console.log("🔐 requireAdmin - req.user:", req.user); // ADICIONE
-  console.log("🔐 requireAdmin - !req.user:", !req.user); // ADICIONE
-
   if (!req.user) {
     res.status(401).json({
       success: false,
