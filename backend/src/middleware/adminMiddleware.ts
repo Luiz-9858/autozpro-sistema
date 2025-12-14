@@ -7,23 +7,22 @@ import { Request, Response, NextFunction } from "express";
 export function requireAdmin(req: Request, res: Response, next: NextFunction) {
   try {
     // O middleware authenticate já colocou o userRole no req
-    const userRole = (req as any).userRole;
+    const user = (req as any).user; // ✅ CORRETO!
 
-    if (!userRole) {
+    if (!user) {
       return res.status(401).json({
         success: false,
         message: "Autenticação necessária",
       });
     }
 
-    if (userRole !== "admin") {
+    if (user.role !== "admin") {
       return res.status(403).json({
         success: false,
         message:
           "Acesso negado. Apenas administradores podem realizar esta ação.",
       });
     }
-
     next();
   } catch (error) {
     res.status(500).json({

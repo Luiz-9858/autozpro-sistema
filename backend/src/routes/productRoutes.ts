@@ -1,4 +1,4 @@
-import { requireAdmin } from "../middleware/adminMiddleware";
+import { authenticate, requireAdmin } from "../middleware/auth";
 import { Router } from "express";
 import {
   listProducts,
@@ -7,7 +7,6 @@ import {
   updateProduct,
   deleteProduct,
 } from "../controllers/productController";
-import { authenticate } from "../middleware/auth";
 
 const router = Router();
 
