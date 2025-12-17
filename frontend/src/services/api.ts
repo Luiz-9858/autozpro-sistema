@@ -7,6 +7,7 @@ const api = axios.create({
   },
 });
 
+// Interceptor para adicionar token automaticamente
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("token");
   if (token) {
@@ -15,6 +16,7 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+// Interceptor para tratar erros globalmente
 api.interceptors.response.use(
   (response) => response,
   (error) => {
