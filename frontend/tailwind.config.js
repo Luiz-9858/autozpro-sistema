@@ -5,12 +5,18 @@ export default {
     extend: {
       colors: {
         primary: {
-          DEFAULT: "#2563eb", // Azul principal
+          DEFAULT: "#2563eb",
           dark: "#1e40af",
+          light: "#3b82f6",
         },
         secondary: {
-          DEFAULT: "#fbbf24", // Amarelo (como no botão "LEARN MORE")
+          DEFAULT: "#fbbf24",
           dark: "#f59e0b",
+          light: "#fcd34d",
+        },
+        accent: {
+          red: "#ef4444",
+          gray: "#6b7280",
         },
       },
     },
