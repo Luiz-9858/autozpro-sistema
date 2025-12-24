@@ -1,8 +1,8 @@
-# 🚗 AutozPro - Visão Geral do Projeto
+# 🚗 B77 Auto Parts - Visão Geral do Projeto
 
 ## 📖 Sobre o Projeto
 
-O **AutozPro** é um sistema de e-commerce especializado na venda de auto peças para veículos leves e pesados. A plataforma oferece uma experiência completa de compra online, desde a busca de peças compatíveis até o acompanhamento de pedidos.
+O **B77 Auto Parts** é um sistema de e-commerce especializado na venda de auto peças para veículos leves e pesados. A plataforma oferece uma experiência completa de compra online, desde a busca de peças compatíveis até o acompanhamento de pedidos.
 
 ---
 

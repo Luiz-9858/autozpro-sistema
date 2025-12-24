@@ -977,13 +977,13 @@ Qualquer outro contexto ou screenshots sobre a funcionalidade.
 
 Mudanças na branch `develop` são automaticamente deployadas para staging.
 
-**URL:** https: //staging.autozpro.com
+**URL:** https: //staging.b77autoparts.com
 
 ### Ambiente de Produção
 
 Apenas após aprovação e merge na `main`.
 
-**URL:** https: //autozpro.com
+**URL:** https: //b77autoparts.com
 
 ### Checklist de Deploy
 
@@ -1047,7 +1047,7 @@ Não desanime! Leia os comentários, faça as correções e resubmeta.
 
 ## Agradecimentos
 
-Obrigado por contribuir com o AutozPro! 🚀
+Obrigado por contribuir com o B77 Auto Parts! 🚀
 
 Cada contribuição, não importa o tamanho, faz diferença. Seja corrigindo um tipo na documentação ou implementando uma feature completa, sua ajuda é muito apreciada!
 

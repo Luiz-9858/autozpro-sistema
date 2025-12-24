@@ -1,4 +1,4 @@
-# 🛠️ Stack Tecnológico - AutozPro
+# 🛠️ Stack Tecnológico - B77 Auto Parts
 
 Documentação completa de todas as tecnologias, bibliotecas e ferramentas utilizadas no projeto.
 
@@ -6,7 +6,7 @@ Documentação completa de todas as tecnologias, bibliotecas e ferramentas utili
 
 ## 📊 Visão Geral
 
-```
+```text
 ┌──────────────────────────────────────────────┐
 │              FRONTEND (CLIENT)               │
 │  React + TypeScript + Vite + Tailwind CSS   │
@@ -226,7 +226,7 @@ Documentação completa de todas as tecnologias, bibliotecas e ferramentas utili
 
 ### Hospedagem (Sugestões)
 
-#### Backend
+#### Backend (Hospedagem)
 
 - **Render** (gratuito para começar)
 - **Railway**
@@ -234,14 +234,14 @@ Documentação completa de todas as tecnologias, bibliotecas e ferramentas utili
 - **DigitalOcean**
 - **AWS EC2**
 
-#### Frontend
+#### Frontend (Hospedagem)
 
 - **Vercel** (recomendado para React)
 - **Netlify**
 - **GitHub Pages**
 - **Cloudflare Pages**
 
-#### Banco de Dados
+#### Banco de Dados (Banco de dados)
 
 - **Render PostgreSQL** (gratuito)
 - **Supabase**

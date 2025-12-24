@@ -1,4 +1,4 @@
-# Componentes - AutozPro Frontend
+# Componentes - B77 Auto Parts Frontend
 
 ## Índice
 
@@ -15,7 +15,7 @@
 
 ## Visão Geral
 
-Os componentes do AutozPro seguem uma arquitetura baseada em **Atomic Design** e **Composition Pattern**, priorizando reutilização, testabilidade e manutenibilidade.
+Os componentes do B77 Auto Parts seguem uma arquitetura baseada em **Atomic Design** e **Composition Pattern**, priorizando reutilização, testabilidade e manutenibilidade.
 
 ### Princípios de Design
 
@@ -902,7 +902,7 @@ function CheckoutAddressStep() {
 
 ### 1. Estrutura de Arquivo de Componente
 
-```
+```estrutura
 ComponentName/
 ├── ComponentName.tsx          # Componente principal
 ├── ComponentName.styles.ts    # Estilos (se necessário)
