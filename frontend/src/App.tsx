@@ -1,8 +1,21 @@
+import { useEffect } from "react";
+import { BrowserRouter } from "react-router-dom";
 import AppRoutes from "./routes";
-import "./App.css";
+import { useAuthStore } from "./store/authStore";
 
 function App() {
-  return <AppRoutes />;
+  const checkAuth = useAuthStore((state) => state.checkAuth);
+
+  // Verificar autenticação ao carregar o app
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  return (
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
+  );
 }
 
 export default App;

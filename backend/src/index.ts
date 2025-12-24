@@ -6,6 +6,9 @@ import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import { setupSecurity } from "./config/security";
 
+//TESTE
+console.log("✅ authRoutes importado:", authRoutes);
+
 // Carregar variáveis de ambiente
 dotenv.config();
 
@@ -39,7 +42,8 @@ app.get("/health", (req, res) => {
 });
 
 // Rotas de autenticação
-app.use("/api/auth", authRoutes);
+app.use("/auth", authRoutes);
+console.log("✅ Rotas de auth registradas em /auth");
 
 // Rotas de produtos
 app.use("/api/products", productRoutes);
@@ -52,9 +56,7 @@ app.use((req, res) => {
   });
 });
 
-// ============================================
 // INICIAR SERVIDOR
-// ============================================
 
 app.listen(PORT, () => {
   console.log(`🚀 Servidor rodando na porta ${PORT}`);
