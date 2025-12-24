@@ -114,7 +114,7 @@ Facilitar a compra de auto peças online, oferecendo um catálogo completo com i
 
 ### Estrutura Geral
 
-```
+```Estrutura
 ┌─────────────┐      ┌─────────────┐      ┌─────────────┐
 │   Frontend  │ ───> │   Backend   │ ───> │  Database   │
 │  (React)    │ <─── │  (Node.js)  │ <─── │ (PostgreSQL)│
