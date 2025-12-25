@@ -23,7 +23,7 @@ Cria uma nova conta de usuário.
 
 ### Endpoint
 
-```
+```http
 POST /api/auth/register
 ```
 
@@ -39,7 +39,7 @@ POST /api/auth/register
   "email": "joao.silva@email.com",
   "senha": "SenhaForte123!",
   "cpf": "123.456.789-00",
-  "telefone": "(11) 98765-4321"
+  "telefone": "(14) 98800-9858"
 }
 ```
 
@@ -66,14 +66,14 @@ POST /api/auth/register
 **cURL:**
 
 ```bash
-curl -X POST http://localhost:3000/api/auth/register \
+curl -X POST http://localhost:3001/api/auth/register \s
   -H "Content-Type: application/json" \
   -d '{
     "nome": "João Silva",
     "email": "joao.silva@email.com",
     "senha": "SenhaForte123!",
     "cpf": "123.456.789-00",
-    "telefone": "(11) 98765-4321"
+    "telefone": "(14) 98800-9858"
   }'
 ```
 
@@ -85,7 +85,7 @@ const response = await axios.post("/api/auth/register", {
   email: "joao.silva@email.com",
   senha: "SenhaForte123!",
   cpf: "123.456.789-00",
-  telefone: "(11) 98765-4321",
+  telefone: "(14) 98800-9858",
 });
 ```
 
@@ -116,7 +116,7 @@ const data = await response.json();
       "nome": "João Silva",
       "email": "joao.silva@email.com",
       "cpf": "123.456.789-00",
-      "telefone": "(11) 98765-4321",
+      "telefone": "(14) 98800-9858",
       "role": "customer",
       "ativo": true,
       "created_at": "2024-12-20T10:00:00Z"
@@ -176,7 +176,7 @@ Autentica um usuário e retorna token JWT.
 
 ### Endpoint
 
-```
+```http
 POST /api/auth/login
 ```
 
@@ -293,7 +293,7 @@ Invalida o token atual (se implementado com blacklist).
 
 ### Endpoint
 
-```
+```http
 POST /api/auth/logout
 ```
 
@@ -303,7 +303,7 @@ POST /api/auth/logout
 
 ### Headers
 
-```
+```http
 Authorization: Bearer eyJhbGciOiJIUzI1NiIs...
 ```
 
@@ -355,7 +355,7 @@ Gera um novo access token usando o refresh token.
 
 ### Endpoint
 
-```
+```http
 POST /api/auth/refresh
 ```
 
