@@ -29,7 +29,7 @@
 
 ## Visão Geral
 
-A API de Usuários gerencia perfis, dados pessoais e endereços dos usuários do e-commerce AutozPro. Implementa controles de privacidade e separação de permissões entre clientes e administradores.
+A API de Usuários gerencia perfis, dados pessoais e endereços dos usuários do e-commerce B77 Auto Parts. Implementa controles de privacidade e separação de permissões entre clientes e administradores.
 
 **Base URL:** `/api/users`
 
@@ -1785,7 +1785,7 @@ try {
 
 ## Conclusão
 
-Esta documentação cobre todos os aspectos da API de Usuários e Perfil do AutozPro. Para questões relacionadas a autenticação e login, consulte [authentication.md](./authentication.md). Para informações sobre pedidos, consulte [orders.md](./orders.md).
+Esta documentação cobre todos os aspectos da API de Usuários e Perfil do B77 Auto Parts. Para questões relacionadas a autenticação e login, consulte [authentication.md](./authentication.md). Para informações sobre pedidos, consulte [orders.md](./orders.md).
 
 **Recursos Relacionados:**
 

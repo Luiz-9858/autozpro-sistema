@@ -21,7 +21,7 @@
 
 ## Visão Geral
 
-A API de Pedidos gerencia todo o ciclo de vida dos pedidos no e-commerce AutozPro, desde a criação até a entrega. Implementa controles de permissão para separar ações de clientes e administradores.
+A API de Pedidos gerencia todo o ciclo de vida dos pedidos no e-commerce B77 Auto Parts, desde a criação até a entrega. Implementa controles de permissão para separar ações de clientes e administradores.
 
 **Base URL:** `/api/orders`
 
@@ -1085,7 +1085,7 @@ const obterEstatisticasCustom = async (dataInicio, dataFim) => {
 };
 
 // Obter estatísticas do último trimestre
-const stats = await obterEstatisticasCustom("2024-10-01", "2024-12-31");
+const stats = await obterEstatisticasCustom("2025-10-01", "2025-12-31");
 ```
 
 ---
@@ -1521,7 +1521,7 @@ if (resultado.sucesso) {
 
 ## Conclusão
 
-Esta documentação cobre todos os aspectos da API de Pedidos do AutozPro. Para questões relacionadas a autenticação, consulte [authentication.md](./authentication.md). Para informações sobre produtos e estoque, consulte [products.md](./products.md).
+Esta documentação cobre todos os aspectos da API de Pedidos do B77 Auto Parts. Para questões relacionadas a autenticação, consulte [authentication.md](./authentication.md). Para informações sobre produtos e estoque, consulte [products.md](./products.md).
 
 **Próximos Passos:**
 

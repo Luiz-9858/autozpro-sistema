@@ -14,7 +14,7 @@
 
 ## Visão Geral
 
-O frontend do **AutozPro** é uma aplicação React moderna construída com TypeScript, Vite e Tailwind CSS. A aplicação oferece uma experiência de e-commerce completa para compra de auto peças, com recursos de busca avançada, carrinho de compras, gestão de pedidos e painel administrativo.
+O frontend do **B77 Auto Parts** é uma aplicação React moderna construída com TypeScript, Vite e Tailwind CSS. A aplicação oferece uma experiência de e-commerce completa para compra de auto peças, com recursos de busca avançada, carrinho de compras, gestão de pedidos e painel administrativo.
 
 **Características principais:**
 

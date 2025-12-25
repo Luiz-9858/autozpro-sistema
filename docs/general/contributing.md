@@ -1,4 +1,4 @@
-# Guia de Contribuição - AutozPro
+# Guia de Contribuição - B77 Auto Parts
 
 ## Índice
 
@@ -13,7 +13,7 @@
 - [Code Review](#code-review)
 - [Testes](#testes)
 - [Documentação](#documentação)
-- [Reportar Bugs](# reportar-bugs)
+- [Reportar Bugs](#reportar-bugs)
 - [Sugerir Funcionalidades](#sugerir-funcionalidades)
 
 ---

@@ -142,7 +142,7 @@ Facilitar a compra de auto peças online, oferecendo um catálogo completo com i
 ### Banco de Dados
 
 - PostgreSQL / MySQL
-- Tabelas principais: users, products, categories, orders, cart_items
+- Tabelas principais: users, products, categories, orders, cart_items, order_items
 - Relacionamentos bem definidos
 - Índices para otimização de queries
 

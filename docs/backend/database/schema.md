@@ -9,7 +9,7 @@ Documentação completa da estrutura do banco de dados PostgreSQL (Supabase).
 **Banco de Dados:** PostgreSQL 15.x (Supabase)  
 **ORM:** Prisma / Supabase Client  
 **Total de Tabelas:** 10+  
-**Diagrama ER:** [Ver diagrama completo](../../diagrams/backend/er-diagram.png)
+**Diagrama ER:** [Ver diagrama completo](../../diagrams/backend/er-diagram.png.png)
 
 ---
 

@@ -32,3 +32,4 @@ logs/
 
 # Prisma
 prisma/migrations/*_migration.sql
+/generated/prisma
