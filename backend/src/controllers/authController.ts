@@ -1,9 +1,17 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
 import { hashPassword, comparePassword } from "../utils/hash";
-import { generateToken } from "../utils/jwt";
+import { generateToken, JwtPayload } from "../utils/jwt";
 
 const prisma = new PrismaClient();
+
+declare global {
+  namespace Express {
+    interface Request {
+      user?: JwtPayload; // Ajuste o tipo conforme necessário (por exemplo, para uma interface User)
+    }
+  }
+}
 
 /**
  * Registrar novo usuário
