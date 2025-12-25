@@ -48,7 +48,7 @@ Documentação completa de todas as tecnologias, bibliotecas e ferramentas utili
 | Tecnologia     | Versão  | Descrição                | Documentação                                 |
 | -------------- | ------- | ------------------------ | -------------------------------------------- |
 | **PostgreSQL** | >= 14.x | Banco relacional robusto | [postgresql.org](https://www.postgresql.org) |
-| **Prisma**     | ^5.x    | ORM moderno para Node.js | [prisma.io](https://www.prisma.io)           |
+| **Prisma**     | ^7.x    | ORM moderno para Node.js | [prisma.io](https://www.prisma.io)           |
 
 **Alternativa:** MySQL + Sequelize
 
