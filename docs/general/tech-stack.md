@@ -66,18 +66,18 @@ Documentação completa de todas as tecnologias, bibliotecas e ferramentas utili
 | **jsonwebtoken**       | ^9.x   | Geração e validação de JWT |
 | **bcryptjs**           | ^2.4.x | Hash de senhas             |
 | **cors**               | ^2.8.x | Controle de CORS           |
-| **helmet**             | ^7.x   | Headers de segurança HTTP  |
-| **express-rate-limit** | ^7.x   | Limitação de requisições   |
+| **helmet**             | ^8.1.x | Headers de segurança HTTP  |
+| **express-rate-limit** | ^8.2.x | Limitação de requisições   |
 
 ---
 
 ### Validação & Processamento
 
-| Tecnologia | Versão | Descrição             |
-| ---------- | ------ | --------------------- |
-| **joi**    | ^17.x  | Validação de schemas  |
-| **multer** | ^1.4.x | Upload de arquivos    |
-| **dotenv** | ^16.x  | Variáveis de ambiente |
+| Tecnologia | Versão  | Descrição             |
+| ---------- | ------- | --------------------- |
+| **joi**    | ^17.x   | Validação de schemas  |
+| **multer** | ^1.4.x  | Upload de arquivos    |
+| **dotenv** | ^17.2.x | Variáveis de ambiente |
 
 **Alternativa para validação:** Yup, Zod
 
@@ -140,7 +140,7 @@ Documentação completa de todas as tecnologias, bibliotecas e ferramentas utili
 
 | Tecnologia       | Versão   | Descrição                      |
 | ---------------- | -------- | ------------------------------ |
-| **React Router** | ^6.x     | Roteamento SPA                 |
+| **React Router** | ^7.2.x   | Roteamento SPA                 |
 | **Context API**  | Built-in | Gerenciamento de estado global |
 
 **Alternativas para estado:**
