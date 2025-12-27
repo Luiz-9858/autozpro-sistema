@@ -1,4 +1,4 @@
-# AutozPro - E-commerce de Auto Peças
+# B 77 Auto Parts - E-commerce de Auto Peças
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
 ![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green)
@@ -88,7 +88,7 @@ Este projeto está sob a licença MIT.
 
 ## 👤 Autor
 
-### Luiz Fernando da Silva \*\*
+### Luiz Fernando da Silva
 
 - GitHub: [@Luiz-9858](https://github.com/Luiz-9858)
 - LinkedIn: [luiz-fernand0-silva](www.linkedin.com/in/luiz-fernand0-silva)
