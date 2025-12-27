@@ -15,7 +15,7 @@
 
 ## Visão Geral
 
-As páginas do AutozPro são organizadas por domínio e nível de acesso, utilizando React Router v6 para navegação e proteção de rotas.
+As páginas do B77 Auto Parts são organizadas por domínio e nível de acesso, utilizando React Router v6 para navegação e proteção de rotas.
 
 ### Convenções
 
@@ -194,7 +194,7 @@ export default Home;
 
 **SEO:**
 
-- Title: "AutozPro - Auto Peças para Veículos Leves e Pesados"
+- Title: "B77 Auto Parts - Auto Peças para Veículos Leves e Pesados"
 - Description: "Encontre as melhores auto peças para seu veículo. Entrega rápida e preços competitivos."
 - Keywords: "auto peças, peças automotivas, filtros, freios, suspensão"
 
