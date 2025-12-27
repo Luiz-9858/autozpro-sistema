@@ -1,4 +1,4 @@
-# 📚 Documentação - AutozPro Sistema E-commerce
+# 📚 Documentação - B77 Auto Parts Sistema E-commerce
 
 Bem-vindo à documentação completa do sistema de e-commerce de auto peças para veículos leves e pesados.
 

@@ -1,4 +1,4 @@
-# 🔙 Documentação Backend - AutozPro API
+# 🔙 Documentação Backend - B77 Auto Parts API
 
 Documentação completa da API REST do sistema de e-commerce de auto peças.
 
