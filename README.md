@@ -1,8 +1,10 @@
 # B 77 Auto Parts - E-commerce de Auto Peças
 
 ![Status](https://img.shields.io/badge/status-em%20desenvolvimento-yellow)
-![Node](https://img.shields.io/badge/node-%3E%3D18.0.0-green)
-![React](https://img.shields.io/badge/react-18.x-blue)
+![Node](https://img.shields.io/badge/node-18.x-green)
+![TypeScript](https://img.shields.io/badge/typescript-5.x-blue)
+![React](https://img.shields.io/badge/react-18.x-61dafb)
+![License](https://img.shields.io/badge/license-MIT-green)
 
 > E-commerce completo para venda de auto peças para veículos leves e pesados.
 
