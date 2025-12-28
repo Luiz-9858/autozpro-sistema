@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📚 Documentação
+    url: https://github.com/Luiz-9858/autozpro/tree/main/docs
+    about: Consulte a documentação completa do projeto
+  - name: 💬 Discussões
+    url: https://github.com/Luiz-9858/autozpro/discussions
+    about: Participe de discussões gerais sobre o projeto
