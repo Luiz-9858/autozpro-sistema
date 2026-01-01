@@ -1,6 +1,8 @@
+import "./config/env";
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
+import prisma from "./config/prisma";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";

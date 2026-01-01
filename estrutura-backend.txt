@@ -1,0 +1,30 @@
+Listagem de caminhos de pasta
+O número de série do volume é 82C8-8A65
+C:\USERS\SUSAN\DOCUMENTS\AUTOZPRO-SISTEMA\BACKEND\SRC
+¦   index.ts
+¦   
++---config
+¦       env.ts
+¦       prisma.ts
+¦       security.ts
+¦       
++---controllers
+¦       authController.ts
+¦       productController.ts
+¦       
++---middleware
+¦       adminMiddleware.ts
+¦       auth.ts
+¦       validate.ts
+¦       
++---routes
+¦       authRoutes.ts
+¦       productRoutes.ts
+¦       
++---types
+¦       express.d.ts
+¦       
++---utils
+        hash.ts
+        jwt.ts
+        

@@ -1,0 +1,37 @@
+Listagem de caminhos de pasta
+O número de série do volume é 82C8-8A65
+C:\USERS\SUSAN\DOCUMENTS\AUTOZPRO-SISTEMA\FRONTEND\SRC
+¦   App.css
+¦   App.tsx
+¦   index.css
+¦   main.tsx
+¦   routes.tsx
+¦   
++---assets
+¦       react.svg
+¦       
++---components
+¦   +---layout
+¦           Footer.tsx
+¦           Header.tsx
+¦           
++---pages
+¦       Dashboard.tsx
+¦       Home.tsx
+¦       Login.tsx
+¦       Products.tsx
+¦       Register.tsx
+¦       
++---services
+¦       api.ts
+¦       
++---store
+¦       authStore.ts
+¦       cartStore.ts
+¦       
++---types
+¦       index.d.ts
+¦       
++---utils
+        formatters.ts
+        

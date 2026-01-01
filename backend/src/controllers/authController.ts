@@ -1,9 +1,7 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import prisma from "../config/prisma"; // ✅ USAR ESTA LINHA
 import { hashPassword, comparePassword } from "../utils/hash";
 import { generateToken, JwtPayload } from "../utils/jwt";
-
-const prisma = new PrismaClient();
 
 declare global {
   namespace Express {
