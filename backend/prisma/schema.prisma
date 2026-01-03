@@ -34,21 +34,27 @@ model Category {
   @@map("categories")
 }
 
+// Model Product ATUALIZADO com campos essenciais
+
 model Product {
-  id          String      @id @default(uuid())
+  id          String   @id @default(uuid())
   name        String
-  slug        String      @unique
+  slug        String   @unique  // ⭐ NOVO: URL amigável
   description String?
   price       Float
-  salePrice   Float?
-  stock       Int         @default(0)
-  sku         String      @unique
+  salePrice   Float?   // ⭐ NOVO: Preço promocional (opcional)
+  stock       Int      @default(0)
+  sku         String   @unique  // ⭐ NOVO: Código único do produto
   imageUrl    String?
+  isActive    Boolean  @default(true)  // ⭐ NOVO: Ativar/desativar produto
+  
   categoryId  String
-  createdAt   DateTime    @default(now())
-  updatedAt   DateTime    @updatedAt
-  category    Category    @relation(fields: [categoryId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id])
+  
   orderItems  OrderItem[]
+  
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   @@map("products")
 }
