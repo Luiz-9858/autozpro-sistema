@@ -3,6 +3,18 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+// Função auxiliar para gerar slug
+function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[^\w\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .trim();
+}
+
 /**
  * Listar todos os produtos (com filtros)
  */
@@ -15,12 +27,16 @@ export async function listProducts(req: Request, res: Response) {
       maxPrice,
       page = 1,
       limit = 20,
+      isActive = "true", // Mostrar apenas produtos ativos por padrão
     } = req.query;
 
     // Construir filtros
-    const where: any = {
-      isActive: true,
-    };
+    const where: any = {};
+
+    // Filtrar apenas produtos ativos (a menos que seja especificado o contrário)
+    if (isActive === "true") {
+      where.isActive = true;
+    }
 
     if (categoryId) {
       where.categoryId = categoryId as string;
@@ -49,7 +65,7 @@ export async function listProducts(req: Request, res: Response) {
         where,
         include: {
           category: {
-            select: { id: true, name: true, slug: true },
+            select: { id: true, name: true, description: true },
           },
         },
         skip,
@@ -81,25 +97,19 @@ export async function listProducts(req: Request, res: Response) {
 }
 
 /**
- * Obter um produto por ID
+ * Obter um produto por ID ou SLUG
  */
 export async function getProduct(req: Request, res: Response) {
   try {
     const { id } = req.params;
 
-    const product = await prisma.product.findUnique({
-      where: { id },
+    // Tentar buscar por ID ou por slug
+    const product = await prisma.product.findFirst({
+      where: {
+        OR: [{ id }, { slug: id }],
+      },
       include: {
         category: true,
-        reviews: {
-          orderBy: { createdAt: "desc" },
-          take: 10,
-        },
-        compatibilities: {
-          include: {
-            vehicle: true,
-          },
-        },
       },
     });
 
@@ -130,7 +140,6 @@ export async function createProduct(req: Request, res: Response) {
   try {
     const {
       name,
-      slug,
       description,
       price,
       salePrice,
@@ -139,6 +148,14 @@ export async function createProduct(req: Request, res: Response) {
       categoryId,
       imageUrl,
     } = req.body;
+
+    // Validações básicas
+    if (!name || !price || !sku || !categoryId) {
+      return res.status(400).json({
+        success: false,
+        message: "Campos obrigatórios: name, price, sku, categoryId",
+      });
+    }
 
     // Verificar se SKU já existe
     const existingSku = await prisma.product.findUnique({
@@ -152,15 +169,26 @@ export async function createProduct(req: Request, res: Response) {
       });
     }
 
+    // Gerar slug automaticamente
+    const slug = generateSlug(name);
+
+    // Verificar se slug já existe (adicionar número se necessário)
+    let finalSlug = slug;
+    let counter = 1;
+    while (await prisma.product.findUnique({ where: { slug: finalSlug } })) {
+      finalSlug = `${slug}-${counter}`;
+      counter++;
+    }
+
     // Criar produto
     const product = await prisma.product.create({
       data: {
         name,
-        slug,
+        slug: finalSlug,
         description,
-        price,
-        salePrice,
-        stock,
+        price: parseFloat(price),
+        salePrice: salePrice ? parseFloat(salePrice) : null,
+        stock: stock ? parseInt(stock) : 0,
         sku,
         categoryId,
         imageUrl,
@@ -191,7 +219,17 @@ export async function createProduct(req: Request, res: Response) {
 export async function updateProduct(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const {
+      name,
+      description,
+      price,
+      salePrice,
+      stock,
+      sku,
+      categoryId,
+      imageUrl,
+      isActive,
+    } = req.body;
 
     // Verificar se produto existe
     const existingProduct = await prisma.product.findUnique({
@@ -204,6 +242,36 @@ export async function updateProduct(req: Request, res: Response) {
         message: "Produto não encontrado",
       });
     }
+
+    // Se está alterando o SKU, verificar se já existe
+    if (sku && sku !== existingProduct.sku) {
+      const existingSku = await prisma.product.findUnique({
+        where: { sku },
+      });
+
+      if (existingSku) {
+        return res.status(400).json({
+          success: false,
+          message: "SKU já cadastrado em outro produto",
+        });
+      }
+    }
+
+    // Montar objeto de atualização
+    const updateData: any = {};
+    if (name !== undefined) {
+      updateData.name = name;
+      updateData.slug = generateSlug(name);
+    }
+    if (description !== undefined) updateData.description = description;
+    if (price !== undefined) updateData.price = parseFloat(price);
+    if (salePrice !== undefined)
+      updateData.salePrice = salePrice ? parseFloat(salePrice) : null;
+    if (stock !== undefined) updateData.stock = parseInt(stock);
+    if (sku !== undefined) updateData.sku = sku;
+    if (categoryId !== undefined) updateData.categoryId = categoryId;
+    if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
+    if (isActive !== undefined) updateData.isActive = isActive;
 
     // Atualizar
     const product = await prisma.product.update({
@@ -229,11 +297,23 @@ export async function updateProduct(req: Request, res: Response) {
 }
 
 /**
- * Deletar produto (ADMIN)
+ * Deletar produto (ADMIN) - Soft delete
  */
 export async function deleteProduct(req: Request, res: Response) {
   try {
     const { id } = req.params;
+
+    // Verificar se produto existe
+    const existingProduct = await prisma.product.findUnique({
+      where: { id },
+    });
+
+    if (!existingProduct) {
+      return res.status(404).json({
+        success: false,
+        message: "Produto não encontrado",
+      });
+    }
 
     // Soft delete (apenas desativa)
     await prisma.product.update({
@@ -243,7 +323,7 @@ export async function deleteProduct(req: Request, res: Response) {
 
     res.json({
       success: true,
-      message: "Produto removido com sucesso",
+      message: "Produto desativado com sucesso",
     });
   } catch (error) {
     console.error("Erro ao deletar produto:", error);
