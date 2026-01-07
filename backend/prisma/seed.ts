@@ -93,7 +93,7 @@ async function main() {
         stock: 50,
         categoryId: motorCat.id,
         imageUrl:
-          "https://via.placeholder.com/300x300/4A90E2/FFFFFF?text=Velas+NGK",
+          "https://placehold.co/300x300/4A90E2/FFFFFF/png?text=Velas+NGK",
         isActive: true,
       },
       {
@@ -105,7 +105,7 @@ async function main() {
         stock: 30,
         categoryId: motorCat.id,
         imageUrl:
-          "https://via.placeholder.com/300x300/4A90E2/FFFFFF?text=Correia+Gates",
+          "https://placehold.co/300x300/4A90E2/FFFFFF/png?text=Correia+Gates",
         isActive: true,
       },
       {
