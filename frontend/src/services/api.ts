@@ -96,12 +96,12 @@ export const authService = {
 
 export const productService = {
   getAll: async () => {
-    const response = await api.get("/products");
+    const response = await api.get("/api/products");
     return response.data;
   },
 
   getById: async (id: string) => {
-    const response = await api.get(`/products/${id}`);
+    const response = await api.get(`/api/products/${id}`);
     return response.data;
   },
 };
