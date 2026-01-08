@@ -41,9 +41,9 @@ const Header = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
               <img
-                src="/logo.png"
+                src="/image.png"
                 alt="B77 Auto Parts"
-                className="h-12 w-auto"
+                className="h-20 w-auto"
                 onError={(e) => {
                   // Fallback caso logo não exista
                   e.currentTarget.style.display = "none";
