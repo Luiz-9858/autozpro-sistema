@@ -196,7 +196,7 @@ const Footer = () => {
 
           {/* Copyright */}
           <div className="text-center text-gray-500 text-sm mt-8">
-            <p>© 2025 AutozPro. Todos os direitos reservados.</p>
+            <p>© 2025 B77 Auto Parts. Todos os direitos reservados.</p>
           </div>
         </div>
       </div>
