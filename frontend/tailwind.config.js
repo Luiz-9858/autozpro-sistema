@@ -4,19 +4,20 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Cores da B77 Auto Parts
         primary: {
-          DEFAULT: "#2563eb",
-          dark: "#1e40af",
-          light: "#3b82f6",
+          DEFAULT: "#DC2626", // Vermelho do logo
+          dark: "#B91C1C", // Vermelho escuro
+          light: "#EF4444", // Vermelho claro
         },
         secondary: {
-          DEFAULT: "#fbbf24",
-          dark: "#f59e0b",
-          light: "#fcd34d",
+          DEFAULT: "#1E293B", // Azul escuro do logo
+          dark: "#0F172A", // Azul muito escuro
+          light: "#334155", // Azul médio
         },
         accent: {
-          red: "#ef4444",
-          gray: "#6b7280",
+          DEFAULT: "#F8FAFC", // Branco/cinza claro
+          gray: "#E2E8F0", // Cinza
         },
       },
     },
