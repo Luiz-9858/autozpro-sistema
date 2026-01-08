@@ -80,8 +80,8 @@ export default function Register() {
         {/* Logo */}
         <div className="flex justify-center">
           <div className="text-4xl font-bold">
-            <span className="text-primary">AUTOZ</span>
-            <span className="text-secondary">PRO</span>
+            <span className="text-primary">B77 Auto Parts</span>
+            <span className="text-secondary">Peças Automotivas</span>
           </div>
         </div>
         <h2 className="mt-6 text-center text-3xl font-extrabold text-gray-900">
