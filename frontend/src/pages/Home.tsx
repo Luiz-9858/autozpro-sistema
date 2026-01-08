@@ -15,9 +15,7 @@ const Home = () => {
 
         <div className="container mx-auto px-4 relative z-10">
           <div className="max-w-3xl">
-            <p className="text-secondary text-sm font-semibold mb-2">
-              COMPRE AS MELHORES
-            </p>
+            <p className="text-xl mb-6 text-gray-250">COMPRE AS MELHORES</p>
             <h1 className="text-5xl font-bold mb-4">
               <span className="text-accent-red">AUTOPEÇAS</span>
               <br />
@@ -26,7 +24,7 @@ const Home = () => {
             <p className="text-xl mb-8 text-gray-300">
               Alta Qualidade - Desempenho Extremo
             </p>
-            <button className="bg-secondary hover:bg-secondary-dark text-gray-900 font-bold px-8 py-3 rounded-lg transition">
+            <button className="bg-secondary hover:bg-red-700 text-gray-900 font-bold px-6 py-3 rounded-lg uppercase shadow-lg transition">
               SAIBA MAIS
             </button>
           </div>
@@ -37,7 +35,9 @@ const Home = () => {
       <section className="bg-gray-800 py-6">
         <div className="container mx-auto px-4">
           <div className="flex items-center gap-4">
-            <div className="text-white text-xl">🚗 Selecione Seu Veículo</div>
+            <div className="text-white text-xl">
+              <i className="fas fa-truck"></i> Selecione Seu Veículo
+            </div>
             <div className="flex-1 flex gap-4">
               <select
                 className="flex-1 px-4 py-2 rounded bg-white text-gray-900"
@@ -123,7 +123,7 @@ const Home = () => {
                   <span className="text-xl font-bold text-primary">
                     R$ 199,90
                   </span>
-                  <button className="bg-secondary hover:bg-secondary-dark text-gray-900 px-4 py-2 rounded text-sm font-semibold">
+                  <button className="bg-secondary hover:bg-secondary-dark text-red-600 px-4 py-2 rounded text-sm font-semibold">
                     Comprar
                   </button>
                 </div>
