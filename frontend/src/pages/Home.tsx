@@ -24,7 +24,7 @@ const Home = () => {
             <p className="text-xl mb-8 text-gray-300">
               Alta Qualidade - Desempenho Extremo
             </p>
-            <button className="bg-secondary hover:bg-red-700 text-gray-900 font-bold px-6 py-3 rounded-lg uppercase shadow-lg transition">
+            <button className="bg-secondary hover:bg-red-700 text-white-500 font-bold px-6 py-3 rounded-lg uppercase shadow-lg transition">
               SAIBA MAIS
             </button>
           </div>
@@ -123,7 +123,7 @@ const Home = () => {
                   <span className="text-xl font-bold text-primary">
                     R$ 199,90
                   </span>
-                  <button className="bg-secondary hover:bg-secondary-dark text-red-600 px-4 py-2 rounded text-sm font-semibold">
+                  <button className="bg-secondary hover:bg-secondary-dark text-red-500 px-4 py-2 rounded text-sm font-bold">
                     Comprar
                   </button>
                 </div>

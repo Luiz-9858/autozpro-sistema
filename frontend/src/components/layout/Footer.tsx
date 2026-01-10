@@ -7,13 +7,13 @@ const Footer = () => {
           {/* Coluna 1: Sobre */}
           <div>
             <h3 className="text-xl font-bold mb-4">
-              <span className="text-primary">AUTOZ</span>
-              <span className="text-secondary">PRO</span>
+              <span className="text-primary">B77 AUTO PARTS</span>
+              <span className="text-secondary"></span>
             </h3>
             <p className="text-gray-400 text-sm">
-              A AutozPro foi estabelecida em 1983 para atender ao grande mercado
-              automotivo. Somos a loja online número 1 de peças automotivas e
-              para motocicletas.
+              A B77 Auto Parts foi estabelecida em 1983 para atender ao grande
+              mercado automotivo. Somos a loja online número 1 de peças
+              automotivas e para motocicletas.
             </p>
           </div>
 
