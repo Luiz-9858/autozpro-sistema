@@ -41,7 +41,7 @@ const Header = () => {
             {/* Logo */}
             <Link to="/" className="flex items-center gap-3">
               <img
-                src="/image.png"
+                src="/b77.jpg"
                 alt="B77 Auto Parts"
                 className="h-20 w-auto"
                 onError={(e) => {
