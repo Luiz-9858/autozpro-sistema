@@ -10,7 +10,8 @@
     "prisma:studio": "npx prisma studio",
     "prisma:push": "npx prisma db push",
     "seed": "ts-node prisma/seed.ts",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "import": "ts-node src/import-bling-products.ts"
   },
   "keywords": [],
   "author": "",
