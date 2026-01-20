@@ -20,30 +20,46 @@ interface Product {
   };
 }
 
+interface Pagination {
+  total: number;
+  page: number;
+  limit: number;
+  totalPages: number;
+}
+
 const Products = () => {
   const [products, setProducts] = useState<Product[]>([]);
+  const [pagination, setPagination] = useState<Pagination>({
+    total: 0,
+    page: 1,
+    limit: 20,
+    totalPages: 0,
+  });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   // Buscar produtos do backend
-  useEffect(() => {
-    const fetchProducts = async () => {
-      try {
-        setLoading(true);
-        const response = await productService.getAll();
-        console.log("RESPOSTA DA API:", response); // ← ADICIONE ESTA LINHA
-        // A API retorna { success: true, data: { products: [...] } }
-        if (response.success && response.data.products) {
-          setProducts(response.data.products);
-        }
-      } catch (err) {
-        console.error("Erro ao buscar produtos:", err);
-        setError("Erro ao carregar produtos. Tente novamente.");
-      } finally {
-        setLoading(false);
-      }
-    };
+  const fetchProducts = async (page: number = 1) => {
+    try {
+      setLoading(true);
+      const response = await productService.getAll(page);
 
+      if (response.success && response.data.products) {
+        setProducts(response.data.products);
+        setPagination(response.data.pagination);
+      }
+    } catch (err: any) {
+      console.error("Erro ao buscar produtos:", err);
+      setError(
+        err?.response?.data?.message ||
+          "Erro ao carregar produtos. Tente novamente.",
+      );
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
     fetchProducts();
   }, []);
 
@@ -60,6 +76,32 @@ const Products = () => {
     if (!salePrice || salePrice >= price) return null;
     const discount = ((price - salePrice) / price) * 100;
     return Math.round(discount);
+  };
+
+  // Mudar de página
+  const handlePageChange = (newPage: number) => {
+    if (newPage < 1 || newPage > pagination.totalPages) return;
+    setPagination({ ...pagination, page: newPage });
+    fetchProducts();
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  // Gerar array de números de página para exibir
+  const getPageNumbers = () => {
+    const pages = [];
+    const maxVisible = 5;
+    let start = Math.max(1, pagination.page - Math.floor(maxVisible / 2));
+    const end = Math.min(pagination.totalPages, start + maxVisible - 1);
+
+    if (end - start < maxVisible - 1) {
+      start = Math.max(1, end - maxVisible + 1);
+    }
+
+    for (let i = start; i <= end; i++) {
+      pages.push(i);
+    }
+
+    return pages;
   };
 
   return (
@@ -84,12 +126,24 @@ const Products = () => {
       {/* Grid de Produtos */}
       {!loading && !error && (
         <>
-          <p className="text-gray-600 mb-6">
-            {products.length}{" "}
-            {products.length === 1
-              ? "produto encontrado"
-              : "produtos encontrados"}
-          </p>
+          {/* Contador e info */}
+          <div className="flex justify-between items-center mb-6">
+            <p className="text-gray-600">
+              Mostrando{" "}
+              <span className="font-semibold">
+                {(pagination.page - 1) * pagination.limit + 1}
+              </span>{" "}
+              a{" "}
+              <span className="font-semibold">
+                {Math.min(pagination.page * pagination.limit, pagination.total)}
+              </span>{" "}
+              de <span className="font-semibold">{pagination.total}</span>{" "}
+              produtos
+            </p>
+            <p className="text-sm text-gray-500">
+              Página {pagination.page} de {pagination.totalPages}
+            </p>
+          </div>
 
           <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
             {products.map((product) => (
@@ -112,9 +166,8 @@ const Products = () => {
                     alt={product.name}
                     className="w-full h-full object-cover"
                     onError={(e) => {
-                      // Fallback para imagem quebrada
                       e.currentTarget.src =
-                        "https://via.placeholder.com/300x300/E5E7EB/6B7280?text=Sem+Imagem";
+                        "https://placehold.co/300x300/E5E7EB/6B7280?text=Sem+Imagem";
                     }}
                   />
                 </div>
@@ -167,7 +220,7 @@ const Products = () => {
 
                   {/* Botão Comprar */}
                   <button
-                    className="bg-secondary hover:bg-secondary-dark text-gray-900 px-4 py-2 rounded text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-secondary hover:bg-secondary-dark text-white px-4 py-2 rounded text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
                     disabled={product.stock === 0}
                   >
                     {product.stock > 0 ? "Comprar" : "Esgotado"}
@@ -176,6 +229,92 @@ const Products = () => {
               </div>
             ))}
           </div>
+
+          {/* Paginação */}
+          {pagination.totalPages > 1 && (
+            <div className="mt-12 flex justify-center items-center gap-2">
+              {/* Botão Primeira Página */}
+              <button
+                onClick={() => handlePageChange(1)}
+                disabled={pagination.page === 1}
+                className="px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                aria-label="Primeira página"
+              >
+                <i className="fas fa-angle-double-left"></i>
+              </button>
+
+              {/* Botão Anterior */}
+              <button
+                onClick={() => handlePageChange(pagination.page - 1)}
+                disabled={pagination.page === 1}
+                className="px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                aria-label="Página anterior"
+              >
+                <i className="fas fa-chevron-left"></i>
+              </button>
+
+              {/* Números de Página */}
+              {pagination.page > 3 && (
+                <>
+                  <button
+                    onClick={() => handlePageChange(1)}
+                    className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50"
+                  >
+                    1
+                  </button>
+                  {pagination.page > 4 && <span className="px-2">...</span>}
+                </>
+              )}
+
+              {getPageNumbers().map((pageNum) => (
+                <button
+                  key={pageNum}
+                  onClick={() => handlePageChange(pageNum)}
+                  className={`px-4 py-2 rounded border transition ${
+                    pageNum === pagination.page
+                      ? "bg-primary text-white border-primary font-bold"
+                      : "border-gray-300 hover:bg-gray-50"
+                  }`}
+                >
+                  {pageNum}
+                </button>
+              ))}
+
+              {pagination.page < pagination.totalPages - 2 && (
+                <>
+                  {pagination.page < pagination.totalPages - 3 && (
+                    <span className="px-2">...</span>
+                  )}
+                  <button
+                    onClick={() => handlePageChange(pagination.totalPages)}
+                    className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50"
+                  >
+                    {pagination.totalPages}
+                  </button>
+                </>
+              )}
+
+              {/* Botão Próximo */}
+              <button
+                onClick={() => handlePageChange(pagination.page + 1)}
+                disabled={pagination.page === pagination.totalPages}
+                className="px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                aria-label="Próxima página"
+              >
+                <i className="fas fa-chevron-right"></i>
+              </button>
+
+              {/* Botão Última Página */}
+              <button
+                onClick={() => handlePageChange(pagination.totalPages)}
+                disabled={pagination.page === pagination.totalPages}
+                className="px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
+                aria-label="Última página"
+              >
+                <i className="fas fa-angle-double-right"></i>
+              </button>
+            </div>
+          )}
 
           {/* Mensagem se não houver produtos */}
           {products.length === 0 && (
