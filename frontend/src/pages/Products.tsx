@@ -39,21 +39,22 @@ const Products = () => {
   const [error, setError] = useState("");
 
   // Buscar produtos do backend
-  const fetchProducts = async (page: number = 1) => {
+  const fetchProducts = async () => {
     try {
       setLoading(true);
-      const response = await productService.getAll(page);
+      const response = await productService.getAll();
 
       if (response.success && response.data.products) {
         setProducts(response.data.products);
         setPagination(response.data.pagination);
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error("Erro ao buscar produtos:", err);
-      setError(
-        err?.response?.data?.message ||
-          "Erro ao carregar produtos. Tente novamente.",
-      );
+      const errorMessage =
+        err instanceof Error
+          ? err.message
+          : "Erro ao carregar produtos. Tente novamente.";
+      setError(errorMessage);
     } finally {
       setLoading(false);
     }
