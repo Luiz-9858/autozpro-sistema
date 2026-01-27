@@ -3,20 +3,8 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
-// Função auxiliar para gerar slug
-function generateSlug(name: string): string {
-  return name
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^\w\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .trim();
-}
-
 /**
- * Listar todos os produtos (com filtros)
+ * Listar todos os produtos (com filtros e PAGINAÇÃO)
  */
 export async function listProducts(req: Request, res: Response) {
   try {
@@ -25,18 +13,12 @@ export async function listProducts(req: Request, res: Response) {
       search,
       minPrice,
       maxPrice,
-      page = 1,
-      limit = 20,
-      isActive = "true", // Mostrar apenas produtos ativos por padrão
+      page = "1",
+      limit = "20",
     } = req.query;
 
     // Construir filtros
     const where: any = {};
-
-    // Filtrar apenas produtos ativos (a menos que seja especificado o contrário)
-    if (isActive === "true") {
-      where.isActive = true;
-    }
 
     if (categoryId) {
       where.categoryId = categoryId as string;
@@ -55,11 +37,14 @@ export async function listProducts(req: Request, res: Response) {
       if (maxPrice) where.price.lte = parseFloat(maxPrice as string);
     }
 
-    // Paginação
-    const skip = (Number(page) - 1) * Number(limit);
-    const take = Number(limit);
+    // Converter page e limit para números
+    const pageNum = parseInt(page as string, 10);
+    const limitNum = parseInt(limit as string, 10);
 
-    // Buscar produtos
+    // Calcular skip (offset) para paginação
+    const skip = (pageNum - 1) * limitNum;
+
+    // Buscar produtos com paginação
     const [products, total] = await Promise.all([
       prisma.product.findMany({
         where,
@@ -69,7 +54,7 @@ export async function listProducts(req: Request, res: Response) {
           },
         },
         skip,
-        take,
+        take: limitNum,
         orderBy: { createdAt: "desc" },
       }),
       prisma.product.count({ where }),
@@ -81,9 +66,9 @@ export async function listProducts(req: Request, res: Response) {
         products,
         pagination: {
           total,
-          page: Number(page),
-          limit: Number(limit),
-          totalPages: Math.ceil(total / Number(limit)),
+          page: pageNum,
+          limit: limitNum,
+          totalPages: Math.ceil(total / limitNum),
         },
       },
     });
@@ -97,17 +82,14 @@ export async function listProducts(req: Request, res: Response) {
 }
 
 /**
- * Obter um produto por ID ou SLUG
+ * Obter um produto por ID
  */
 export async function getProduct(req: Request, res: Response) {
   try {
     const { id } = req.params;
 
-    // Tentar buscar por ID ou por slug
-    const product = await prisma.product.findFirst({
-      where: {
-        OR: [{ id }, { slug: id }],
-      },
+    const product = await prisma.product.findUnique({
+      where: { id },
       include: {
         category: true,
       },
@@ -138,61 +120,32 @@ export async function getProduct(req: Request, res: Response) {
  */
 export async function createProduct(req: Request, res: Response) {
   try {
-    const {
-      name,
-      description,
-      price,
-      salePrice,
-      stock,
-      sku,
-      categoryId,
-      imageUrl,
-    } = req.body;
+    const { name, description, price, stock, categoryId, imageUrl } = req.body;
 
     // Validações básicas
-    if (!name || !price || !sku || !categoryId) {
+    if (!name || !price || !categoryId) {
       return res.status(400).json({
         success: false,
-        message: "Campos obrigatórios: name, price, sku, categoryId",
+        message: "Campos obrigatórios: name, price, categoryId",
       });
-    }
-
-    // Verificar se SKU já existe
-    const existingSku = await prisma.product.findUnique({
-      where: { sku },
-    });
-
-    if (existingSku) {
-      return res.status(400).json({
-        success: false,
-        message: "SKU já cadastrado",
-      });
-    }
-
-    // Gerar slug automaticamente
-    const slug = generateSlug(name);
-
-    // Verificar se slug já existe (adicionar número se necessário)
-    let finalSlug = slug;
-    let counter = 1;
-    while (await prisma.product.findUnique({ where: { slug: finalSlug } })) {
-      finalSlug = `${slug}-${counter}`;
-      counter++;
     }
 
     // Criar produto
     const product = await prisma.product.create({
       data: {
         name,
-        slug: finalSlug,
         description,
         price: parseFloat(price),
-        salePrice: salePrice ? parseFloat(salePrice) : null,
         stock: stock ? parseInt(stock) : 0,
-        sku,
         categoryId,
         imageUrl,
-        isActive: true,
+        slug: name
+          .toLowerCase()
+          .trim()
+          .replace(/[^\w\s-]/g, "")
+          .replace(/[\s_-]+/g, "-")
+          .replace(/^-+|-+$/g, ""),
+        sku: `SKU-${Math.random().toString(36).toUpperCase().substring(7)}`,
       },
       include: {
         category: true,
@@ -219,17 +172,7 @@ export async function createProduct(req: Request, res: Response) {
 export async function updateProduct(req: Request, res: Response) {
   try {
     const { id } = req.params;
-    const {
-      name,
-      description,
-      price,
-      salePrice,
-      stock,
-      sku,
-      categoryId,
-      imageUrl,
-      isActive,
-    } = req.body;
+    const { name, description, price, stock, categoryId, imageUrl } = req.body;
 
     // Verificar se produto existe
     const existingProduct = await prisma.product.findUnique({
@@ -243,35 +186,14 @@ export async function updateProduct(req: Request, res: Response) {
       });
     }
 
-    // Se está alterando o SKU, verificar se já existe
-    if (sku && sku !== existingProduct.sku) {
-      const existingSku = await prisma.product.findUnique({
-        where: { sku },
-      });
-
-      if (existingSku) {
-        return res.status(400).json({
-          success: false,
-          message: "SKU já cadastrado em outro produto",
-        });
-      }
-    }
-
-    // Montar objeto de atualização
+    // Montar objeto de atualização (apenas campos enviados)
     const updateData: any = {};
-    if (name !== undefined) {
-      updateData.name = name;
-      updateData.slug = generateSlug(name);
-    }
+    if (name !== undefined) updateData.name = name;
     if (description !== undefined) updateData.description = description;
     if (price !== undefined) updateData.price = parseFloat(price);
-    if (salePrice !== undefined)
-      updateData.salePrice = salePrice ? parseFloat(salePrice) : null;
     if (stock !== undefined) updateData.stock = parseInt(stock);
-    if (sku !== undefined) updateData.sku = sku;
     if (categoryId !== undefined) updateData.categoryId = categoryId;
     if (imageUrl !== undefined) updateData.imageUrl = imageUrl;
-    if (isActive !== undefined) updateData.isActive = isActive;
 
     // Atualizar
     const product = await prisma.product.update({
@@ -297,7 +219,7 @@ export async function updateProduct(req: Request, res: Response) {
 }
 
 /**
- * Deletar produto (ADMIN) - Soft delete
+ * Deletar produto (ADMIN)
  */
 export async function deleteProduct(req: Request, res: Response) {
   try {
@@ -315,15 +237,14 @@ export async function deleteProduct(req: Request, res: Response) {
       });
     }
 
-    // Soft delete (apenas desativa)
-    await prisma.product.update({
+    // Deletar produto
+    await prisma.product.delete({
       where: { id },
-      data: { isActive: false },
     });
 
     res.json({
       success: true,
-      message: "Produto desativado com sucesso",
+      message: "Produto removido com sucesso",
     });
   } catch (error) {
     console.error("Erro ao deletar produto:", error);
