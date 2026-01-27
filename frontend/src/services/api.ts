@@ -21,7 +21,7 @@ api.interceptors.request.use(
   },
   (error) => {
     return Promise.reject(error);
-  }
+  },
 );
 
 // Interceptor para tratar erros de resposta
@@ -35,7 +35,7 @@ api.interceptors.response.use(
       window.location.href = "/login";
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 // =========================================
@@ -95,8 +95,9 @@ export const authService = {
 // ==========================================
 
 export const productService = {
-  getAll: async () => {
-    const response = await api.get("/api/products");
+  // ✅ ATUALIZADO: Aceita page e limit como parâmetros
+  getAll: async (page: number = 1, limit: number = 20) => {
+    const response = await api.get(`/api/products?page=${page}&limit=${limit}`);
     return response.data;
   },
 
