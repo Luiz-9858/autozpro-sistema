@@ -39,10 +39,10 @@ const Products = () => {
   const [error, setError] = useState("");
 
   // Buscar produtos do backend
-  const fetchProducts = async () => {
+  const fetchProducts = async (page: number = 1) => {
     try {
       setLoading(true);
-      const response = await productService.getAll();
+      const response = await productService.getAll(page, 20); // ← PASSA page e limit
 
       if (response.success && response.data.products) {
         setProducts(response.data.products);
