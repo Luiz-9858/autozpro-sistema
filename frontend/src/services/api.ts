@@ -1,16 +1,14 @@
 import axios from "axios";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3001";
-
-// Criar instância do axios com configurações padrão
-export const api = axios.create({
-  baseURL: API_URL,
+const api = axios.create({
+  baseURL: import.meta.env.VITE_API_URL || "http://localhost:3001",
+  timeout: 10000,
   headers: {
     "Content-Type": "application/json",
   },
 });
 
-// Interceptor para adicionar token em todas as requisições
+// Interceptor para adicionar token nas requisições
 api.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem("token");
@@ -19,16 +17,13 @@ api.interceptors.request.use(
     }
     return config;
   },
-  (error) => {
-    return Promise.reject(error);
-  },
+  (error) => Promise.reject(error),
 );
 
-// Interceptor para tratar erros de resposta
+// Interceptor para tratar erros de autenticação
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // Se receber 401 (não autorizado), limpar token e redirecionar
     if (error.response?.status === 401) {
       localStorage.removeItem("token");
       localStorage.removeItem("user");
@@ -38,71 +33,113 @@ api.interceptors.response.use(
   },
 );
 
-// =========================================
-// 🔐 AUTENTICAÇÃO
-// ==========================================
-
-export interface LoginData {
-  email: string;
-  password: string;
-}
-
-export interface RegisterData {
-  name: string;
-  email: string;
-  password: string;
-  phone?: string;
-}
-
-export interface AuthResponse {
-  user: {
-    id: string;
-    name: string;
-    email: string;
-    role: string;
-  };
-  token: string;
-}
+// ========================================
+// 🔐 AUTH SERVICES
+// ========================================
 
 export const authService = {
-  // Login
-  login: async (data: LoginData): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>("/auth/login", data);
+  register: async (data: { name: string; email: string; password: string }) => {
+    const response = await api.post("/auth/register", data);
     return response.data;
   },
 
-  // Registro
-  register: async (data: RegisterData): Promise<AuthResponse> => {
-    const response = await api.post<AuthResponse>("/auth/register", data);
+  login: async (data: { email: string; password: string }) => {
+    const response = await api.post("/auth/login", data);
     return response.data;
   },
 
-  // Obter usuário atual
-  me: async (): Promise<AuthResponse["user"]> => {
-    const response = await api.get<AuthResponse["user"]>("/auth/me");
+  me: async () => {
+    const response = await api.get("/auth/me");
     return response.data;
-  },
-
-  // Logout (apenas limpa dados locais)
-  logout: () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
   },
 };
 
-// ==========================================
-// 📦 PRODUTOS (placeholder para próximos passos)
-// ==========================================
+// ========================================
+// 📦 PRODUCT SERVICES
+// ========================================
+
+export interface Product {
+  id: string;
+  name: string;
+  slug: string;
+  sku: string;
+  description: string | null;
+  price: number;
+  salePrice: number | null;
+  stock: number;
+  imageUrl: string | null;
+  isActive: boolean;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface PaginationData {
+  currentPage: number;
+  totalPages: number;
+  totalProducts: number;
+  limit: number;
+  hasNextPage: boolean;
+  hasPrevPage: boolean;
+}
+
+export interface ProductsResponse {
+  success: boolean;
+  data: {
+    products: Product[];
+    pagination: PaginationData;
+  };
+}
 
 export const productService = {
-  // ✅ ATUALIZADO: Aceita page e limit como parâmetros
-  getAll: async (page: number = 1, limit: number = 20) => {
+  getAll: async (
+    page: number = 1,
+    limit: number = 20,
+  ): Promise<ProductsResponse> => {
+    console.log(`🔍 Buscando produtos - Página ${page}, Limite ${limit}`); // Debug
     const response = await api.get(`/api/products?page=${page}&limit=${limit}`);
+    console.log("📦 Resposta da API:", response.data); // Debug
     return response.data;
   },
 
   getById: async (id: string) => {
     const response = await api.get(`/api/products/${id}`);
+    return response.data;
+  },
+
+  create: async (data: Partial<Product>) => {
+    const response = await api.post("/api/products", data);
+    return response.data;
+  },
+
+  update: async (id: string, data: Partial<Product>) => {
+    const response = await api.put(`/api/products/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await api.delete(`/api/products/${id}`);
+    return response.data;
+  },
+};
+
+// ========================================
+// 🛒 CATEGORY SERVICES
+// ========================================
+
+export const categoryService = {
+  getAll: async () => {
+    const response = await api.get("/api/categories");
+    return response.data;
+  },
+
+  getById: async (id: string) => {
+    const response = await api.get(`/api/categories/${id}`);
     return response.data;
   },
 };
