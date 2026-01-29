@@ -1,334 +1,252 @@
-import { useState, useEffect } from "react";
+import { useEffect, useState } from "react";
 import { productService } from "../services/api";
+import type { Product, PaginationData } from "../services/api";
 
-interface Product {
-  id: string;
-  name: string;
-  slug: string;
-  sku: string;
-  description: string;
-  price: number;
-  salePrice: number | null;
-  stock: number;
-  imageUrl: string;
-  isActive: boolean;
-  categoryId: string;
-  category: {
-    id: string;
-    name: string;
-    description: string;
-  };
-}
-
-interface Pagination {
-  total: number;
-  page: number;
-  limit: number;
-  totalPages: number;
-}
-
-const Products = () => {
+export default function Products() {
   const [products, setProducts] = useState<Product[]>([]);
-  const [pagination, setPagination] = useState<Pagination>({
-    total: 0,
-    page: 1,
+  const [pagination, setPagination] = useState<PaginationData>({
+    currentPage: 1,
+    totalPages: 1,
+    totalProducts: 0,
     limit: 20,
-    totalPages: 0,
+    hasNextPage: false,
+    hasPrevPage: false,
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  // Buscar produtos do backend
+  // 🔄 Função para buscar produtos
   const fetchProducts = async (page: number = 1) => {
     try {
       setLoading(true);
-      const response = await productService.getAll(page, 20); // ← PASSA page e limit
+      setError("");
+      console.log(`🔍 Carregando página ${page}...`);
 
-      if (response.success && response.data.products) {
+      const response = await productService.getAll(page, 20);
+
+      console.log("📦 Dados recebidos:", response);
+
+      if (response.success && response.data) {
         setProducts(response.data.products);
         setPagination(response.data.pagination);
+
+        console.log(`✅ ${response.data.products.length} produtos carregados`);
+        console.log(
+          `📄 Página ${response.data.pagination.currentPage} de ${response.data.pagination.totalPages}`,
+        );
       }
     } catch (err) {
-      console.error("Erro ao buscar produtos:", err);
-      const errorMessage =
-        err instanceof Error
-          ? err.message
-          : "Erro ao carregar produtos. Tente novamente.";
-      setError(errorMessage);
+      console.error("❌ Erro ao buscar produtos:", err);
+      setError("Erro ao carregar produtos. Tente novamente.");
     } finally {
       setLoading(false);
     }
   };
 
+  // 🚀 Carregar produtos ao montar o componente
   useEffect(() => {
-    fetchProducts();
+    fetchProducts(1);
   }, []);
 
-  // Formatar preço em Real
-  const formatPrice = (price: number) => {
-    return new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(price);
-  };
-
-  // Calcular desconto percentual
-  const getDiscount = (price: number, salePrice: number | null) => {
-    if (!salePrice || salePrice >= price) return null;
-    const discount = ((price - salePrice) / price) * 100;
-    return Math.round(discount);
-  };
-
-  // Mudar de página
-  const handlePageChange = (newPage: number) => {
-    if (newPage < 1 || newPage > pagination.totalPages) return;
-    setPagination({ ...pagination, page: newPage });
-    fetchProducts();
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  };
-
-  // Gerar array de números de página para exibir
-  const getPageNumbers = () => {
-    const pages = [];
-    const maxVisible = 5;
-    let start = Math.max(1, pagination.page - Math.floor(maxVisible / 2));
-    const end = Math.min(pagination.totalPages, start + maxVisible - 1);
-
-    if (end - start < maxVisible - 1) {
-      start = Math.max(1, end - maxVisible + 1);
+  // 📄 Ir para página específica
+  const goToPage = (page: number) => {
+    if (page >= 1 && page <= pagination.totalPages) {
+      fetchProducts(page);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
+  };
 
-    for (let i = start; i <= end; i++) {
-      pages.push(i);
-    }
-
-    return pages;
+  // 🎨 Placeholder para imagens quebradas
+  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
+    e.currentTarget.src =
+      "https://placehold.co/300x300/1E293B/DC2626?text=Sem+Imagem";
   };
 
   return (
-    <div className="container mx-auto px-4 py-12">
-      <h1 className="text-3xl font-bold mb-8">Nossos Produtos</h1>
-
-      {/* Loading */}
-      {loading && (
-        <div className="text-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto"></div>
-          <p className="mt-4 text-gray-600">Carregando produtos...</p>
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        {/* 📊 Header com contadores */}
+        <div className="mb-8">
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Catálogo de Produtos
+          </h1>
+          <p className="text-gray-600">
+            Exibindo {products.length} de {pagination.totalProducts} produtos
+            {pagination.totalPages > 1 && (
+              <span className="ml-2 text-sm">
+                (Página {pagination.currentPage} de {pagination.totalPages})
+              </span>
+            )}
+          </p>
         </div>
-      )}
 
-      {/* Error */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
-          {error}
-        </div>
-      )}
-
-      {/* Grid de Produtos */}
-      {!loading && !error && (
-        <>
-          {/* Contador e info */}
-          <div className="flex justify-between items-center mb-6">
-            <p className="text-gray-600">
-              Mostrando{" "}
-              <span className="font-semibold">
-                {(pagination.page - 1) * pagination.limit + 1}
-              </span>{" "}
-              a{" "}
-              <span className="font-semibold">
-                {Math.min(pagination.page * pagination.limit, pagination.total)}
-              </span>{" "}
-              de <span className="font-semibold">{pagination.total}</span>{" "}
-              produtos
-            </p>
-            <p className="text-sm text-gray-500">
-              Página {pagination.page} de {pagination.totalPages}
-            </p>
+        {/* ⚠️ Estado de erro */}
+        {error && (
+          <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
+            {error}
           </div>
+        )}
 
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-            {products.map((product) => (
-              <div
-                key={product.id}
-                className="bg-white border rounded-lg p-4 hover:shadow-lg transition"
-              >
-                {/* Badge de Desconto */}
-                {product.salePrice &&
-                  getDiscount(product.price, product.salePrice) && (
-                    <div className="bg-red-500 text-white text-xs font-bold px-2 py-1 rounded mb-2 inline-block">
-                      -{getDiscount(product.price, product.salePrice)}% OFF
-                    </div>
-                  )}
-
-                {/* Imagem */}
-                <div className="bg-gray-200 h-48 rounded mb-4 flex items-center justify-center overflow-hidden">
-                  <img
-                    src={product.imageUrl || "/placeholder.png"}
-                    alt={product.name}
-                    className="w-full h-full object-cover"
-                    onError={(e) => {
-                      e.currentTarget.src =
-                        "https://placehold.co/300x300/E5E7EB/6B7280?text=Sem+Imagem";
-                    }}
-                  />
-                </div>
-
-                {/* Badge da Categoria */}
-                <span className="text-xs text-primary font-semibold uppercase">
-                  {product.category.name}
-                </span>
-
-                {/* Nome do Produto */}
-                <h3 className="font-semibold mb-2 mt-1 line-clamp-2 min-h-[3rem]">
-                  {product.name}
-                </h3>
-
-                {/* Descrição */}
-                <p className="text-gray-600 text-sm mb-3 line-clamp-2 min-h-[2.5rem]">
-                  {product.description}
-                </p>
-
-                {/* SKU e Estoque */}
-                <div className="text-xs text-gray-500 mb-3">
-                  <span className="font-mono">SKU: {product.sku}</span>
-                  {product.stock > 0 ? (
-                    <span className="ml-2 text-green-600">
-                      ✓ Em estoque ({product.stock})
-                    </span>
-                  ) : (
-                    <span className="ml-2 text-red-600">✗ Indisponível</span>
-                  )}
-                </div>
-
-                {/* Preços */}
-                <div className="flex items-center justify-between">
-                  <div>
-                    {product.salePrice ? (
-                      <>
-                        <span className="text-xl font-bold text-primary">
-                          {formatPrice(product.salePrice)}
-                        </span>
-                        <span className="text-sm text-gray-500 line-through ml-2">
-                          {formatPrice(product.price)}
-                        </span>
-                      </>
-                    ) : (
-                      <span className="text-xl font-bold text-primary">
-                        {formatPrice(product.price)}
+        {/* ⏳ Estado de carregamento */}
+        {loading ? (
+          <div className="flex justify-center items-center h-64">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          </div>
+        ) : (
+          <>
+            {/* 🛍️ Grid de produtos */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+              {products.map((product) => (
+                <div
+                  key={product.id}
+                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
+                >
+                  {/* Imagem do produto */}
+                  <div className="relative h-48 bg-gray-100">
+                    <img
+                      src={
+                        product.imageUrl ||
+                        "https://placehold.co/300x300/1E293B/DC2626?text=Sem+Imagem"
+                      }
+                      alt={product.name}
+                      onError={handleImageError}
+                      className="w-full h-full object-cover"
+                    />
+                    {product.salePrice && (
+                      <span className="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
+                        PROMOÇÃO
+                      </span>
+                    )}
+                    {product.stock === 0 && (
+                      <span className="absolute top-2 left-2 bg-gray-800 text-white text-xs font-bold px-2 py-1 rounded">
+                        SEM ESTOQUE
                       </span>
                     )}
                   </div>
 
-                  {/* Botão Comprar */}
-                  <button
-                    className="bg-secondary hover:bg-secondary-dark text-white px-4 py-2 rounded text-sm font-semibold disabled:opacity-50 disabled:cursor-not-allowed transition"
-                    disabled={product.stock === 0}
-                  >
-                    {product.stock > 0 ? "Comprar" : "Esgotado"}
-                  </button>
+                  {/* Informações do produto */}
+                  <div className="p-4">
+                    {/* Categoria */}
+                    <span className="text-xs text-gray-500 uppercase tracking-wide">
+                      {product.category.name}
+                    </span>
+
+                    {/* Nome */}
+                    <h3 className="mt-2 text-sm font-semibold text-gray-900 line-clamp-2 h-10">
+                      {product.name}
+                    </h3>
+
+                    {/* Preço */}
+                    <div className="mt-3">
+                      {product.salePrice ? (
+                        <div>
+                          <p className="text-xs text-gray-500 line-through">
+                            R$ {product.price.toFixed(2)}
+                          </p>
+                          <p className="text-lg font-bold text-primary">
+                            R$ {product.salePrice.toFixed(2)}
+                          </p>
+                        </div>
+                      ) : (
+                        <p className="text-lg font-bold text-gray-900">
+                          R$ {product.price.toFixed(2)}
+                        </p>
+                      )}
+                    </div>
+
+                    {/* Estoque */}
+                    <p className="mt-2 text-xs text-gray-600">
+                      {product.stock > 0
+                        ? `${product.stock} em estoque`
+                        : "Indisponível"}
+                    </p>
+
+                    {/* Botão */}
+                    <button
+                      disabled={product.stock === 0}
+                      className={`mt-4 w-full py-2 px-4 rounded-md font-medium text-sm transition-colors ${
+                        product.stock === 0
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
+                          : "bg-primary text-white hover:bg-primary-dark"
+                      }`}
+                    >
+                      {product.stock === 0
+                        ? "Indisponível"
+                        : "Adicionar ao Carrinho"}
+                    </button>
+                  </div>
                 </div>
-              </div>
-            ))}
-          </div>
-
-          {/* Paginação */}
-          {pagination.totalPages > 1 && (
-            <div className="mt-12 flex justify-center items-center gap-2">
-              {/* Botão Primeira Página */}
-              <button
-                onClick={() => handlePageChange(1)}
-                disabled={pagination.page === 1}
-                className="px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                aria-label="Primeira página"
-              >
-                <i className="fas fa-angle-double-left"></i>
-              </button>
-
-              {/* Botão Anterior */}
-              <button
-                onClick={() => handlePageChange(pagination.page - 1)}
-                disabled={pagination.page === 1}
-                className="px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                aria-label="Página anterior"
-              >
-                <i className="fas fa-chevron-left"></i>
-              </button>
-
-              {/* Números de Página */}
-              {pagination.page > 3 && (
-                <>
-                  <button
-                    onClick={() => handlePageChange(1)}
-                    className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50"
-                  >
-                    1
-                  </button>
-                  {pagination.page > 4 && <span className="px-2">...</span>}
-                </>
-              )}
-
-              {getPageNumbers().map((pageNum) => (
-                <button
-                  key={pageNum}
-                  onClick={() => handlePageChange(pageNum)}
-                  className={`px-4 py-2 rounded border transition ${
-                    pageNum === pagination.page
-                      ? "bg-primary text-white border-primary font-bold"
-                      : "border-gray-300 hover:bg-gray-50"
-                  }`}
-                >
-                  {pageNum}
-                </button>
               ))}
-
-              {pagination.page < pagination.totalPages - 2 && (
-                <>
-                  {pagination.page < pagination.totalPages - 3 && (
-                    <span className="px-2">...</span>
-                  )}
-                  <button
-                    onClick={() => handlePageChange(pagination.totalPages)}
-                    className="px-4 py-2 rounded border border-gray-300 hover:bg-gray-50"
-                  >
-                    {pagination.totalPages}
-                  </button>
-                </>
-              )}
-
-              {/* Botão Próximo */}
-              <button
-                onClick={() => handlePageChange(pagination.page + 1)}
-                disabled={pagination.page === pagination.totalPages}
-                className="px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                aria-label="Próxima página"
-              >
-                <i className="fas fa-chevron-right"></i>
-              </button>
-
-              {/* Botão Última Página */}
-              <button
-                onClick={() => handlePageChange(pagination.totalPages)}
-                disabled={pagination.page === pagination.totalPages}
-                className="px-3 py-2 rounded border border-gray-300 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition"
-                aria-label="Última página"
-              >
-                <i className="fas fa-angle-double-right"></i>
-              </button>
             </div>
-          )}
 
-          {/* Mensagem se não houver produtos */}
-          {products.length === 0 && (
-            <div className="text-center py-12">
-              <p className="text-gray-500 text-lg">
-                Nenhum produto encontrado.
-              </p>
+            {/* 📄 Controles de paginação */}
+            {pagination.totalPages > 1 && (
+              <div className="flex justify-center items-center gap-2 mt-8 mb-4">
+                {/* Botão: Primeira página */}
+                <button
+                  onClick={() => goToPage(1)}
+                  disabled={!pagination.hasPrevPage}
+                  aria-label="Ir para a primeira página"
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                >
+                  <i
+                    className="fas fa-angle-double-left"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+
+                {/* Botão: Página anterior */}
+                <button
+                  onClick={() => goToPage(pagination.currentPage - 1)}
+                  disabled={!pagination.hasPrevPage}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                >
+                  <i className="fas fa-chevron-left mr-2"></i>
+                  Anterior
+                </button>
+
+                {/* Indicador de página atual */}
+                <div className="px-6 py-2 bg-primary text-white rounded-md font-medium">
+                  {pagination.currentPage} / {pagination.totalPages}
+                </div>
+
+                {/* Botão: Próxima página */}
+                <button
+                  onClick={() => goToPage(pagination.currentPage + 1)}
+                  disabled={!pagination.hasNextPage}
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                >
+                  Próxima
+                  <i className="fas fa-chevron-right ml-2"></i>
+                </button>
+
+                {/* Botão: Última página */}
+                <button
+                  onClick={() => goToPage(pagination.totalPages)}
+                  disabled={!pagination.hasNextPage}
+                  aria-label="Ir para a última página"
+                  className="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
+                >
+                  <i
+                    className="fas fa-angle-double-right"
+                    aria-hidden="true"
+                  ></i>
+                </button>
+              </div>
+            )}
+
+            {/* ℹ️ Info adicional */}
+            <div className="text-center text-sm text-gray-500 mt-4">
+              Mostrando {(pagination.currentPage - 1) * pagination.limit + 1} -{" "}
+              {Math.min(
+                pagination.currentPage * pagination.limit,
+                pagination.totalProducts,
+              )}{" "}
+              de {pagination.totalProducts} produtos
             </div>
-          )}
-        </>
-      )}
+          </>
+        )}
+      </div>
     </div>
   );
-};
-
-export default Products;
+}
