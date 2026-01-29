@@ -28,7 +28,7 @@ export function generateToken(payload: JwtPayload): string {
     {
       expiresIn: expiresIn,
       algorithm: "HS256",
-    } as jwt.SignOptions
+    } as jwt.SignOptions,
   );
 }
 
