@@ -1,33 +1,43 @@
 import { Request, Response, NextFunction } from "express";
 
-/**
- * Middleware para verificar se o usuário é admin
- * Deve ser usado DEPOIS do middleware authenticate
- */
-export function requireAdmin(req: Request, res: Response, next: NextFunction) {
-  try {
-    // O middleware authenticate já colocou o userRole no req
-    const user = (req as any).user; // ✅ CORRETO!
+// ========================================
+// 👑 MIDDLEWARE DE ADMIN
+// ========================================
 
-    if (!user) {
-      return res.status(401).json({
+const adminMiddleware = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
+  try {
+    // 1️⃣ Verificar se o usuário foi autenticado
+    if (!req.user) {
+      res.status(401).json({
         success: false,
-        message: "Autenticação necessária",
+        message: "Usuário não autenticado",
       });
+      return;
     }
 
-    if (user.role !== "admin") {
-      return res.status(403).json({
+    // 2️⃣ Verificar se o usuário é admin
+    if (req.user.role !== "admin") {
+      res.status(403).json({
         success: false,
         message:
           "Acesso negado. Apenas administradores podem realizar esta ação.",
       });
+      return;
     }
+
+    // 3️⃣ Usuário é admin, pode continuar
     next();
   } catch (error) {
+    console.error("❌ Erro no middleware de admin:", error);
     res.status(500).json({
       success: false,
       message: "Erro ao verificar permissões",
     });
   }
-}
+};
+
+export default adminMiddleware;
