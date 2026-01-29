@@ -1,9 +1,15 @@
-import { JwtPayload } from "../utils/jwt";
+// ========================================
+// 🌐 DECLARAÇÕES GLOBAIS DO EXPRESS
+// ========================================
 
 declare global {
   namespace Express {
     interface Request {
-      user?: JwtPayload;
+      user?: {
+        id: string;
+        email: string;
+        role: string;
+      };
     }
   }
 }
