@@ -1,56 +1,37 @@
-import { authenticate, requireAdmin } from "../middleware/auth";
 import { Router } from "express";
 import {
-  listProducts,
-  getProduct,
+  getProducts,
+  getProductById,
   createProduct,
   updateProduct,
   deleteProduct,
 } from "../controllers/productController";
+import authMiddleware from "../middleware/auth";
+import adminMiddleware from "../middleware/adminMiddleware";
 
 const router = Router();
 
 // ========================================
-// ROTAS PÚBLICAS (sem autenticação)
+// 🔓 ROTAS PÚBLICAS (sem autenticação)
 // ========================================
 
-/**
- * GET /api/products
- * Listar todos os produtos
- * Query params: categoryId, search, minPrice, maxPrice, page, limit
- */
-router.get("/", listProducts);
+// GET /api/products - Listar todos os produtos (COM PAGINAÇÃO)
+router.get("/", getProducts);
 
-/**
- * GET /api/products/:id
- * Ver detalhes de um produto específico
- */
-router.get("/:id", getProduct);
+// GET /api/products/:id - Buscar produto por ID
+router.get("/:id", getProductById);
 
 // ========================================
-// ROTAS PROTEGIDAS (apenas ADMIN)
+// 🔐 ROTAS PROTEGIDAS (admin apenas)
 // ========================================
 
-/**
- * POST /api/products
- * Criar novo produto
- * Requer: autenticação + role admin
- */
-console.log("📦 Registrando rota POST /api/products");
-router.post("/", authenticate, requireAdmin, createProduct);
+// POST /api/products - Criar novo produto (admin)
+router.post("/", authMiddleware, adminMiddleware, createProduct);
 
-/**
- * PUT /api/products/:id
- * Atualizar produto existente
- * Requer: autenticação + role admin
- */
-router.put("/:id", authenticate, requireAdmin, updateProduct);
+// PUT /api/products/:id - Atualizar produto (admin)
+router.put("/:id", authMiddleware, adminMiddleware, updateProduct);
 
-/**
- * DELETE /api/products/:id
- * Deletar (desativar) produto
- * Requer: autenticação + role admin
- */
-router.delete("/:id", authenticate, requireAdmin, deleteProduct);
+// DELETE /api/products/:id - Deletar produto (admin)
+router.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
 
 export default router;
