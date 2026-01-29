@@ -1,32 +1,21 @@
 import { Request, Response, NextFunction } from "express";
-import { verifyToken, extractTokenFromHeader, JwtPayload } from "../utils/jwt";
+import { verifyToken } from "../utils/jwt";
+import prisma from "../config/prisma";
 
-/**
- * Estende a interface Request do Express para incluir dados do usuário
- */
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload;
-    }
-  }
-}
+// ========================================
+// 🛡️ MIDDLEWARE DE AUTENTICAÇÃO
+// ========================================
 
-/**
- * Middleware de autenticação
- * Verifica se o token JWT é válido e adiciona os dados do usuário ao request
- */
-export function authenticate(
+const authMiddleware = async (
   req: Request,
   res: Response,
-  next: NextFunction
-): void {
+  next: NextFunction,
+): Promise<void> => {
   try {
-    // Extrair token do header Authorization
+    // 1️⃣ Pegar token do header Authorization
+    const authHeader = req.headers.authorization;
 
-    const token = extractTokenFromHeader(req.headers.authorization);
-
-    if (!token) {
+    if (!authHeader) {
       res.status(401).json({
         success: false,
         message: "Token não fornecido",
@@ -34,10 +23,21 @@ export function authenticate(
       return;
     }
 
-    // Verificar e decodificar o token
+    // 2️⃣ Extrair token (formato: "Bearer TOKEN")
+    const token = authHeader.replace("Bearer ", "");
+
+    if (!token) {
+      res.status(401).json({
+        success: false,
+        message: "Token inválido",
+      });
+      return;
+    }
+
+    // 3️⃣ Verificar token JWT
     const decoded = verifyToken(token);
 
-    if (!decoded) {
+    if (!decoded || typeof decoded === "string") {
       res.status(401).json({
         success: false,
         message: "Token inválido ou expirado",
@@ -45,67 +45,40 @@ export function authenticate(
       return;
     }
 
-    // Adicionar dados do usuário ao request
-    req.user = decoded;
-    // Continuar para a próxima função
-    next();
-  } catch (error) {
-    res.status(500).json({
-      success: false,
-      message: "Erro ao verificar autenticação",
+    // 4️⃣ Buscar usuário no banco
+    const user = await prisma.user.findUnique({
+      where: { id: decoded.userId },
+      select: {
+        id: true,
+        email: true,
+        role: true,
+        name: true,
+      },
     });
-  }
-}
 
-/**
- * Middleware para verificar se o usuário é administrador
- */
-export function requireAdmin(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  if (!req.user) {
-    res.status(401).json({
-      success: false,
-      message: "Autenticação necessária",
-    });
-    return;
-  }
-
-  if (req.user.role !== "admin") {
-    res.status(403).json({
-      success: false,
-      message: "Acesso negado. Apenas administradores.",
-    });
-    return;
-  }
-
-  next();
-}
-
-/**
- * Middleware opcional de autenticação
- * Não bloqueia a requisição se não houver token, apenas adiciona user se existir
- */
-export function optionalAuth(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): void {
-  try {
-    const token = extractTokenFromHeader(req.headers.authorization);
-
-    if (token) {
-      const decoded = verifyToken(token);
-      if (decoded) {
-        req.user = decoded;
-      }
+    if (!user) {
+      res.status(401).json({
+        success: false,
+        message: "Usuário não encontrado",
+      });
+      return;
     }
 
+    // 5️⃣ Adicionar usuário ao request
+    req.user = {
+      id: user.id,
+      email: user.email,
+      role: user.role,
+    };
+
     next();
   } catch (error) {
-    // Ignora erros e continua sem autenticação
-    next();
+    console.error("❌ Erro no middleware de autenticação:", error);
+    res.status(401).json({
+      success: false,
+      message: "Erro ao validar token",
+    });
   }
-}
+};
+
+export default authMiddleware;
