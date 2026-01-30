@@ -1,14 +1,42 @@
 import { Request, Response } from "express";
 import prisma from "../config/prisma";
 
-export const getProducts = async (req: Request, res: Response) => {
+// ========================================
+// 📝 INTERFACES E TIPOS
+// ========================================
+
+interface PaginationQuery {
+  page?: string;
+  limit?: string;
+}
+
+interface ProductCreateData {
+  name: string;
+  slug: string;
+  sku: string;
+  description?: string;
+  price: number;
+  salePrice?: number;
+  stock: number;
+  imageUrl?: string;
+  categoryId: string;
+}
+
+// ========================================
+// 🔍 GET ALL PRODUCTS (COM PAGINAÇÃO)
+// ========================================
+
+export const getProducts = async (
+  req: Request<{}, {}, {}, PaginationQuery>,
+  res: Response,
+): Promise<void> => {
   try {
     // 1️⃣ Pegar parâmetros de paginação da query string
-    const page = parseInt(req.query.page as string) || 1;
-    const limit = parseInt(req.query.limit as string) || 20;
-    const skip = (page - 1) * limit;
+    const page: number = parseInt(req.query.page as string) || 1;
+    const limit: number = parseInt(req.query.limit as string) || 20;
+    const skip: number = (page - 1) * limit;
 
-    console.log(`📄 Buscando produtos - Página ${page}, Limite ${limit}`); // Debug
+    console.log(`📄 Buscando produtos - Página ${page}, Limite ${limit}`);
 
     // 2️⃣ Buscar produtos com paginação
     const [products, totalProducts] = await Promise.all([
@@ -21,22 +49,23 @@ export const getProducts = async (req: Request, res: Response) => {
               id: true,
               name: true,
               slug: true,
+              description: true,
             },
           },
         },
         orderBy: {
-          createdAt: "desc", // Produtos mais recentes primeiro
+          createdAt: "desc",
         },
       }),
-      prisma.product.count(), // Total de produtos no banco
+      prisma.product.count(),
     ]);
 
     // 3️⃣ Calcular total de páginas
-    const totalPages = Math.ceil(totalProducts / limit);
+    const totalPages: number = Math.ceil(totalProducts / limit);
 
     console.log(
       `✅ Encontrados ${products.length} produtos de ${totalProducts} totais`,
-    ); // Debug
+    );
 
     // 4️⃣ Retornar resposta COM metadados de paginação
     res.json({
@@ -63,7 +92,14 @@ export const getProducts = async (req: Request, res: Response) => {
   }
 };
 
-export const getProductById = async (req: Request, res: Response) => {
+// ========================================
+// 🔍 GET PRODUCT BY ID
+// ========================================
+
+export const getProductById = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
   try {
     const { id } = req.params;
 
@@ -75,16 +111,18 @@ export const getProductById = async (req: Request, res: Response) => {
             id: true,
             name: true,
             slug: true,
+            description: true,
           },
         },
       },
     });
 
     if (!product) {
-      return res.status(404).json({
+      res.status(404).json({
         success: false,
         message: "Produto não encontrado",
       });
+      return;
     }
 
     res.json({
@@ -101,7 +139,14 @@ export const getProductById = async (req: Request, res: Response) => {
   }
 };
 
-export const createProduct = async (req: Request, res: Response) => {
+// ========================================
+// ➕ CREATE PRODUCT
+// ========================================
+
+export const createProduct = async (
+  req: Request<{}, {}, ProductCreateData>,
+  res: Response,
+): Promise<void> => {
   try {
     const {
       name,
@@ -120,11 +165,11 @@ export const createProduct = async (req: Request, res: Response) => {
         name,
         slug,
         sku,
-        description,
+        description: description || null,
         price,
-        salePrice,
+        salePrice: salePrice || null,
         stock,
-        imageUrl,
+        imageUrl: imageUrl || null,
         categoryId,
       },
       include: {
@@ -146,7 +191,14 @@ export const createProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const updateProduct = async (req: Request, res: Response) => {
+// ========================================
+// ✏️ UPDATE PRODUCT
+// ========================================
+
+export const updateProduct = async (
+  req: Request<{ id: string }, {}, Partial<ProductCreateData>>,
+  res: Response,
+): Promise<void> => {
   try {
     const { id } = req.params;
     const updateData = req.body;
@@ -173,7 +225,14 @@ export const updateProduct = async (req: Request, res: Response) => {
   }
 };
 
-export const deleteProduct = async (req: Request, res: Response) => {
+// ========================================
+// ❌ DELETE PRODUCT
+// ========================================
+
+export const deleteProduct = async (
+  req: Request<{ id: string }>,
+  res: Response,
+): Promise<void> => {
   try {
     const { id } = req.params;
 
