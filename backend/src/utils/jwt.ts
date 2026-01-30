@@ -5,8 +5,6 @@ import jwt from "jsonwebtoken";
  */
 export interface JwtPayload {
   userId: string;
-  email: string;
-  role: string;
 }
 
 /**
@@ -22,14 +20,10 @@ export function generateToken(payload: JwtPayload): string {
     throw new Error("JWT_SECRET não está definido no .env");
   }
 
-  return jwt.sign(
-    { userId: payload.userId, email: payload.email, role: payload.role },
-    secret,
-    {
-      expiresIn: expiresIn,
-      algorithm: "HS256",
-    } as jwt.SignOptions,
-  );
+  return jwt.sign({ userId: payload.userId }, secret, {
+    expiresIn: expiresIn,
+    algorithm: "HS256",
+  } as jwt.SignOptions);
 }
 
 /**
