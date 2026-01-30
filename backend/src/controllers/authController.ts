@@ -1,24 +1,17 @@
 import { Request, Response } from "express";
-import prisma from "../config/prisma"; // ✅ USAR ESTA LINHA
+import prisma from "../config/prisma";
 import { hashPassword, comparePassword } from "../utils/hash";
-import { generateToken, JwtPayload } from "../utils/jwt";
+import { generateToken } from "../utils/jwt";
 
-declare global {
-  namespace Express {
-    interface Request {
-      user?: JwtPayload; // Ajuste o tipo conforme necessário (por exemplo, para uma interface User)
-    }
-  }
-}
+// ========================================
+// 📝 REGISTER - Criar novo usuário
+// ========================================
 
-/**
- * Registrar novo usuário
- */
-export async function register(req: Request, res: Response): Promise<void> {
+export const register = async (req: Request, res: Response): Promise<void> => {
   try {
     const { name, email, password } = req.body;
 
-    // Verificar se usuário já existe
+    // 1️⃣ Verificar se o email já existe
     const existingUser = await prisma.user.findUnique({
       where: { email },
     });
@@ -31,16 +24,16 @@ export async function register(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Criptografar senha
+    // 2️⃣ Hash da senha
     const hashedPassword = await hashPassword(password);
 
-    // Criar usuário
+    // 3️⃣ Criar usuário
     const user = await prisma.user.create({
       data: {
         name,
         email,
         password: hashedPassword,
-        role: "customer",
+        role: "customer", // Por padrão, novo usuário é customer
       },
       select: {
         id: true,
@@ -51,38 +44,36 @@ export async function register(req: Request, res: Response): Promise<void> {
       },
     });
 
-    // Gerar token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    // 4️⃣ Gerar token JWT
+    const token = generateToken({ userId: user.id });
 
     res.status(201).json({
       success: true,
-      message: "Usuário cadastrado com sucesso",
+      message: "Usuário criado com sucesso",
       data: {
         user,
         token,
       },
     });
   } catch (error) {
-    console.error("Erro ao registrar usuário:", error);
+    console.error("❌ Erro ao registrar usuário:", error);
     res.status(500).json({
       success: false,
-      message: "Erro ao cadastrar usuário",
+      message: "Erro ao criar usuário",
+      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
-}
+};
 
-/**
- * Login de usuário
- */
-export async function login(req: Request, res: Response): Promise<void> {
+// ========================================
+// 🔐 LOGIN - Autenticar usuário
+// ========================================
+
+export const login = async (req: Request, res: Response): Promise<void> => {
   try {
     const { email, password } = req.body;
 
-    // Buscar usuário
+    // 1️⃣ Buscar usuário por email
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -95,10 +86,10 @@ export async function login(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Verificar senha
-    const isPasswordValid = await comparePassword(password, user.password);
+    // 2️⃣ Verificar senha
+    const isValidPassword = await comparePassword(password, user.password);
 
-    if (!isPasswordValid) {
+    if (!isValidPassword) {
       res.status(401).json({
         success: false,
         message: "Email ou senha inválidos",
@@ -106,12 +97,8 @@ export async function login(req: Request, res: Response): Promise<void> {
       return;
     }
 
-    // Gerar token
-    const token = generateToken({
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-    });
+    // 3️⃣ Gerar token JWT
+    const token = generateToken({ userId: user.id });
 
     res.json({
       success: true,
@@ -127,29 +114,33 @@ export async function login(req: Request, res: Response): Promise<void> {
       },
     });
   } catch (error) {
-    console.error("Erro ao fazer login:", error);
+    console.error("❌ Erro ao fazer login:", error);
     res.status(500).json({
       success: false,
       message: "Erro ao fazer login",
+      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
-}
+};
 
-/**
- * Obter dados do usuário logado
- */
-export async function getMe(req: Request, res: Response): Promise<void> {
+// ========================================
+// 👤 ME - Obter dados do usuário autenticado
+// ========================================
+
+export const me = async (req: Request, res: Response): Promise<void> => {
   try {
+    // req.user é definido pelo authMiddleware
     if (!req.user) {
       res.status(401).json({
         success: false,
-        message: "Não autenticado",
+        message: "Usuário não autenticado",
       });
       return;
     }
 
+    // Buscar dados completos do usuário
     const user = await prisma.user.findUnique({
-      where: { id: req.user.userId },
+      where: { id: req.user.id },
       select: {
         id: true,
         name: true,
@@ -170,13 +161,14 @@ export async function getMe(req: Request, res: Response): Promise<void> {
 
     res.json({
       success: true,
-      data: { user },
+      data: user,
     });
   } catch (error) {
-    console.error("Erro ao buscar usuário:", error);
+    console.error("❌ Erro ao buscar usuário:", error);
     res.status(500).json({
       success: false,
       message: "Erro ao buscar dados do usuário",
+      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
-}
+};
