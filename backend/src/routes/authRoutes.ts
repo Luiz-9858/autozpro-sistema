@@ -1,20 +1,24 @@
 import { Router } from "express";
-import { register, login, getMe } from "../controllers/authController";
-import { authenticate } from "../middleware/auth";
+import { register, login, me } from "../controllers/authController";
+import authMiddleware from "../middleware/auth";
 
 const router = Router();
 
-// Rotas públicas
-console.log("🔨 Registrando rota POST /register");
+// ========================================
+// 🔓 ROTAS PÚBLICAS (sem autenticação)
+// ========================================
+
+// POST /auth/register - Criar novo usuário
 router.post("/register", register);
 
-console.log("🔨 Registrando rota POST /login");
+// POST /auth/login - Login de usuário
 router.post("/login", login);
 
-// Rotas protegidas (precisa estar logado)
-console.log("🔨 Registrando rota GET /me");
-router.get("/me", authenticate, getMe);
+// ========================================
+// 🔐 ROTAS PROTEGIDAS (necessita autenticação)
+// ========================================
 
-console.log("✅ Todas as rotas de autenticação foram registradas!");
+// GET /auth/me - Obter dados do usuário autenticado
+router.get("/me", authMiddleware, me);
 
 export default router;
