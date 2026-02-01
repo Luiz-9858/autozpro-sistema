@@ -1,15 +1,9 @@
-import "./config/env";
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
-import prisma from "./config/prisma";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
-import { setupSecurity } from "./config/security";
-
-//TESTE
-console.log("✅ authRoutes importado:", authRoutes);
+import categoryRoutes from "./routes/categoryRoutes"; // ✅ NOVO
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -17,51 +11,35 @@ dotenv.config();
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-// ============================================
-// MIDDLEWARES GLOBAIS
-// ============================================
+// ========================================
+// 🔧 MIDDLEWARES
+// ========================================
 
-// Parser de JSON
+app.use(cors());
 app.use(express.json());
 
-// Parser de URL encoded
-app.use(express.urlencoded({ extended: true }));
+// ========================================
+// 🛣️ ROTAS
+// ========================================
 
-// Configurar segurança (Helmet, CORS, Rate Limit)
-setupSecurity(app);
-
-// ============================================
-// ROTAS
-// ============================================
-
-// Rota de health check
+// Health check
 app.get("/health", (req, res) => {
-  res.json({
-    status: "OK",
-    message: "API AutozPro funcionando!",
-    timestamp: new Date().toISOString(),
-  });
+  res.json({ status: "ok", message: "Servidor funcionando!" });
 });
 
 // Rotas de autenticação
 app.use("/auth", authRoutes);
-console.log("✅ Rotas de auth registradas em /auth");
 
 // Rotas de produtos
 app.use("/api/products", productRoutes);
 
-// Rota 404 - não encontrado
-app.use((req, res) => {
-  res.status(404).json({
-    error: "Rota não encontrada",
-    path: req.path,
-  });
-});
+// Rotas de categorias ✅ NOVO
+app.use("/api/categories", categoryRoutes);
 
-// INICIAR SERVIDOR
+// ========================================
+// 🚀 INICIAR SERVIDOR
+// ========================================
 
 app.listen(PORT, () => {
-  console.log(`🚀 Servidor rodando na porta ${PORT}`);
-  console.log(`📍 http://localhost:${PORT}`);
-  console.log(`🏥 Health check: http://localhost:${PORT}/health`);
+  console.log(`✅ Servidor rodando na porta ${PORT}`);
 });
