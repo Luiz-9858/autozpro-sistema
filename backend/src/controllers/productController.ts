@@ -8,6 +8,8 @@ import prisma from "../config/prisma";
 interface PaginationQuery {
   page?: string;
   limit?: string;
+  categoryId?: string; // ✅ NOVO: Filtro por categoria
+  search?: string; // ✅ NOVO: Busca por nome
 }
 
 interface ProductCreateData {
@@ -23,7 +25,7 @@ interface ProductCreateData {
 }
 
 // ========================================
-// 🔍 GET ALL PRODUCTS (COM PAGINAÇÃO)
+// 🔍 GET ALL PRODUCTS (COM PAGINAÇÃO E FILTROS)
 // ========================================
 
 export const getProducts = async (
@@ -31,18 +33,38 @@ export const getProducts = async (
   res: Response,
 ): Promise<void> => {
   try {
-    // 1️⃣ Pegar parâmetros de paginação da query string
+    // 1️⃣ Pegar parâmetros da query string
     const page: number = parseInt(req.query.page as string) || 1;
     const limit: number = parseInt(req.query.limit as string) || 20;
     const skip: number = (page - 1) * limit;
+    const categoryId = req.query.categoryId;
+    const search = req.query.search;
 
     console.log(`📄 Buscando produtos - Página ${page}, Limite ${limit}`);
+    if (categoryId) console.log(`🏷️  Filtro: Categoria ${categoryId}`);
+    if (search) console.log(`🔍 Busca: "${search}"`);
 
-    // 2️⃣ Buscar produtos com paginação
+    // 2️⃣ Montar filtros dinâmicos
+    const where: any = {};
+
+    if (categoryId) {
+      where.categoryId = categoryId;
+    }
+
+    if (search) {
+      where.OR = [
+        { name: { contains: search, mode: "insensitive" } },
+        { description: { contains: search, mode: "insensitive" } },
+        { sku: { contains: search, mode: "insensitive" } },
+      ];
+    }
+
+    // 3️⃣ Buscar produtos com filtros
     const [products, totalProducts] = await Promise.all([
       prisma.product.findMany({
         skip,
         take: limit,
+        where,
         include: {
           category: {
             select: {
@@ -57,17 +79,17 @@ export const getProducts = async (
           createdAt: "desc",
         },
       }),
-      prisma.product.count(),
+      prisma.product.count({ where }),
     ]);
 
-    // 3️⃣ Calcular total de páginas
+    // 4️⃣ Calcular total de páginas
     const totalPages: number = Math.ceil(totalProducts / limit);
 
     console.log(
       `✅ Encontrados ${products.length} produtos de ${totalProducts} totais`,
     );
 
-    // 4️⃣ Retornar resposta COM metadados de paginação
+    // 5️⃣ Retornar resposta COM metadados de paginação
     res.json({
       success: true,
       data: {
@@ -79,6 +101,10 @@ export const getProducts = async (
           limit,
           hasNextPage: page < totalPages,
           hasPrevPage: page > 1,
+        },
+        filters: {
+          categoryId: categoryId || null,
+          search: search || null,
         },
       },
     });
