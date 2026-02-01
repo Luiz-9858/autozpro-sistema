@@ -1,9 +1,12 @@
 import { useEffect, useState } from "react";
-import { productService } from "../services/api";
-import type { Product, PaginationData } from "../services/api";
+import { useSearchParams } from "react-router-dom";
+import { productService, categoryService } from "../services/api";
+import type { Product, PaginationData, Category } from "../services/api";
 
 export default function Products() {
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
     currentPage: 1,
     totalPages: 1,
@@ -15,25 +18,39 @@ export default function Products() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
+  // Filtros ativos
+  const categoryId = searchParams.get("categoryId") || undefined;
+  const searchTerm = searchParams.get("search") || undefined;
+  const currentPage = parseInt(searchParams.get("page") || "1");
+
+  // 🔄 Função para buscar categorias
+  const fetchCategories = async () => {
+    try {
+      const response = await categoryService.getAll();
+      if (response.success) {
+        setCategories(response.data);
+      }
+    } catch (error) {
+      console.error("❌ Erro ao buscar categorias:", error);
+    }
+  };
+
   // 🔄 Função para buscar produtos
   const fetchProducts = async (page: number = 1) => {
     try {
       setLoading(true);
       setError("");
-      console.log(`🔍 Carregando página ${page}...`);
 
-      const response = await productService.getAll(page, 20);
-
-      console.log("📦 Dados recebidos:", response);
+      const response = await productService.getAll(
+        page,
+        20,
+        categoryId,
+        searchTerm,
+      );
 
       if (response.success && response.data) {
         setProducts(response.data.products);
         setPagination(response.data.pagination);
-
-        console.log(`✅ ${response.data.products.length} produtos carregados`);
-        console.log(
-          `📄 Página ${response.data.pagination.currentPage} de ${response.data.pagination.totalPages}`,
-        );
       }
     } catch (err) {
       console.error("❌ Erro ao buscar produtos:", err);
@@ -43,33 +60,56 @@ export default function Products() {
     }
   };
 
-  // 🚀 Carregar produtos ao montar o componente
+  // Buscar categorias ao montar
   useEffect(() => {
-    fetchProducts(1);
+    fetchCategories();
   }, []);
 
-  // 📄 Ir para página específica
+  // Buscar produtos quando filtros mudarem
+  useEffect(() => {
+    fetchProducts(currentPage);
+    //eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentPage, categoryId, searchTerm]);
+
   const goToPage = (page: number) => {
     if (page >= 1 && page <= pagination.totalPages) {
+      const params = new URLSearchParams();
+      params.set("page", page.toString());
+      if (categoryId) params.set("categoryId", categoryId);
+      if (searchTerm) params.set("search", searchTerm);
+
+      window.history.pushState({}, "", `?${params.toString()}`);
       fetchProducts(page);
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
-  // 🎨 Placeholder para imagens quebradas
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
     e.currentTarget.src =
       "https://placehold.co/300x300/1E293B/DC2626?text=Sem+Imagem";
   };
 
+  const getCategoryName = () => {
+    if (!categoryId) return null;
+    const category = categories.find((c) => c.id === categoryId);
+    return category?.name;
+  };
+
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* 📊 Header com contadores */}
+        {/* Header com filtros ativos */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
-            Catálogo de Produtos
+            {getCategoryName() || "Catálogo de Produtos"}
           </h1>
+
+          {searchTerm && (
+            <p className="text-gray-600 mb-2">
+              Resultados para: <strong>"{searchTerm}"</strong>
+            </p>
+          )}
+
           <p className="text-gray-600">
             Exibindo {products.length} de {pagination.totalProducts} produtos
             {pagination.totalPages > 1 && (
@@ -80,28 +120,38 @@ export default function Products() {
           </p>
         </div>
 
-        {/* ⚠️ Estado de erro */}
+        {/* Estado de erro */}
         {error && (
           <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded mb-6">
             {error}
           </div>
         )}
 
-        {/* ⏳ Estado de carregamento */}
+        {/* Estado de carregamento */}
         {loading ? (
           <div className="flex justify-center items-center h-64">
             <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
           </div>
+        ) : products.length === 0 ? (
+          <div className="text-center py-12">
+            <i className="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
+            <h3 className="text-xl font-semibold text-gray-700 mb-2">
+              Nenhum produto encontrado
+            </h3>
+            <p className="text-gray-500">
+              Tente ajustar os filtros ou fazer uma nova busca
+            </p>
+          </div>
         ) : (
           <>
-            {/* 🛍️ Grid de produtos */}
+            {/* Grid de produtos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {products.map((product) => (
                 <div
                   key={product.id}
                   className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
                 >
-                  {/* Imagem do produto */}
+                  {/* Imagem */}
                   <div className="relative h-48 bg-gray-100">
                     <img
                       src={
@@ -124,19 +174,16 @@ export default function Products() {
                     )}
                   </div>
 
-                  {/* Informações do produto */}
+                  {/* Info */}
                   <div className="p-4">
-                    {/* Categoria */}
                     <span className="text-xs text-gray-500 uppercase tracking-wide">
                       {product.category.name}
                     </span>
 
-                    {/* Nome */}
                     <h3 className="mt-2 text-sm font-semibold text-gray-900 line-clamp-2 h-10">
                       {product.name}
                     </h3>
 
-                    {/* Preço */}
                     <div className="mt-3">
                       {product.salePrice ? (
                         <div>
@@ -154,16 +201,15 @@ export default function Products() {
                       )}
                     </div>
 
-                    {/* Estoque */}
                     <p className="mt-2 text-xs text-gray-600">
                       {product.stock > 0
                         ? `${product.stock} em estoque`
                         : "Indisponível"}
                     </p>
 
-                    {/* Botão */}
                     <button
                       disabled={product.stock === 0}
+                      aria-label={`Adicionar ${product.name} ao carrinho`}
                       className={`mt-4 w-full py-2 px-4 rounded-md font-medium text-sm transition-colors ${
                         product.stock === 0
                           ? "bg-gray-300 text-gray-500 cursor-not-allowed"
@@ -179,10 +225,9 @@ export default function Products() {
               ))}
             </div>
 
-            {/* 📄 Controles de paginação */}
+            {/* Paginação */}
             {pagination.totalPages > 1 && (
               <div className="flex justify-center items-center gap-2 mt-8 mb-4">
-                {/* Botão: Primeira página */}
                 <button
                   onClick={() => goToPage(1)}
                   disabled={!pagination.hasPrevPage}
@@ -195,32 +240,36 @@ export default function Products() {
                   ></i>
                 </button>
 
-                {/* Botão: Página anterior */}
                 <button
                   onClick={() => goToPage(pagination.currentPage - 1)}
                   disabled={!pagination.hasPrevPage}
+                  aria-label="Página anterior"
                   className="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
-                  <i className="fas fa-chevron-left mr-2"></i>
+                  <i
+                    className="fas fa-chevron-left mr-2"
+                    aria-hidden="true"
+                  ></i>
                   Anterior
                 </button>
 
-                {/* Indicador de página atual */}
                 <div className="px-6 py-2 bg-primary text-white rounded-md font-medium">
                   {pagination.currentPage} / {pagination.totalPages}
                 </div>
 
-                {/* Botão: Próxima página */}
                 <button
                   onClick={() => goToPage(pagination.currentPage + 1)}
                   disabled={!pagination.hasNextPage}
+                  aria-label="Próxima página"
                   className="px-4 py-2 bg-white border border-gray-300 rounded-md disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-50 transition-colors"
                 >
                   Próxima
-                  <i className="fas fa-chevron-right ml-2"></i>
+                  <i
+                    className="fas fa-chevron-right ml-2"
+                    aria-hidden="true"
+                  ></i>
                 </button>
 
-                {/* Botão: Última página */}
                 <button
                   onClick={() => goToPage(pagination.totalPages)}
                   disabled={!pagination.hasNextPage}
@@ -235,7 +284,6 @@ export default function Products() {
               </div>
             )}
 
-            {/* ℹ️ Info adicional */}
             <div className="text-center text-sm text-gray-500 mt-4">
               Mostrando {(pagination.currentPage - 1) * pagination.limit + 1} -{" "}
               {Math.min(
