@@ -93,6 +93,10 @@ export interface ProductsResponse {
   data: {
     products: Product[];
     pagination: PaginationData;
+    filters?: {
+      categoryId: string | null;
+      search: string | null;
+    };
   };
 }
 
@@ -100,10 +104,22 @@ export const productService = {
   getAll: async (
     page: number = 1,
     limit: number = 20,
+    categoryId?: string,
+    search?: string,
   ): Promise<ProductsResponse> => {
-    console.log(`🔍 Buscando produtos - Página ${page}, Limite ${limit}`); // Debug
-    const response = await api.get(`/api/products?page=${page}&limit=${limit}`);
-    console.log("📦 Resposta da API:", response.data); // Debug
+    let url = `/api/products?page=${page}&limit=${limit}`;
+
+    if (categoryId) {
+      url += `&categoryId=${categoryId}`;
+    }
+
+    if (search) {
+      url += `&search=${encodeURIComponent(search)}`;
+    }
+
+    console.log(`🔍 Buscando produtos:`, { page, limit, categoryId, search });
+    const response = await api.get(url);
+    console.log("📦 Resposta da API:", response.data);
     return response.data;
   },
 
@@ -129,17 +145,35 @@ export const productService = {
 };
 
 // ========================================
-// 🛒 CATEGORY SERVICES
+// 📂 CATEGORY SERVICES
 // ========================================
 
+export interface Category {
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  productCount: number;
+}
+
+export interface CategoriesResponse {
+  success: boolean;
+  data: Category[];
+}
+
 export const categoryService = {
-  getAll: async () => {
+  getAll: async (): Promise<CategoriesResponse> => {
     const response = await api.get("/api/categories");
     return response.data;
   },
 
   getById: async (id: string) => {
     const response = await api.get(`/api/categories/${id}`);
+    return response.data;
+  },
+
+  getBySlug: async (slug: string) => {
+    const response = await api.get(`/api/categories/slug/${slug}`);
     return response.data;
   },
 };
