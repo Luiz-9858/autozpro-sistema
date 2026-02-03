@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
 import { useCartStore } from "../../store/cartStore";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect } from "react";
 import { categoryService } from "../../services/api";
 import type { Category } from "../../services/api";
 
@@ -12,20 +12,26 @@ export default function Header() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
 
-  // Linha 15 - Envolva fetchCategories:
-  const fetchCategories = useCallback(async () => {
-    try {
-      const response = await categoryService.getAll();
-      if (response.success) {
-        setCategories(response.data);
-      }
-    } catch (error) {
-      console.error("❌ Erro ao buscar categorias:", error);
-    }
-  }, []);
+  useEffect(() => {
+    let mounted = true;
 
-  // 🚀 Buscar categorias ao montar o componente
-  useEffect(() => {}, [fetchCategories]);
+    const loadCategories = async () => {
+      try {
+        const response = await categoryService.getAll();
+        if (mounted && response.success) {
+          setCategories(response.data);
+        }
+      } catch (error) {
+        console.error("❌ Erro ao buscar categorias:", error);
+      }
+    };
+
+    loadCategories();
+
+    return () => {
+      mounted = false;
+    };
+  }, []);
 
   const handleLogout = () => {
     logout();
