@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { productService, categoryService } from "../services/api";
 import type { Product, PaginationData, Category } from "../services/api";
+import ProductCard from "../components/layout/ProductCard";
 
 export default function Products() {
   const [searchParams] = useSearchParams();
@@ -68,7 +69,7 @@ export default function Products() {
   // Buscar produtos quando filtros mudarem
   useEffect(() => {
     fetchProducts(currentPage);
-    //eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentPage, categoryId, searchTerm]);
 
   const goToPage = (page: number) => {
@@ -84,15 +85,16 @@ export default function Products() {
     }
   };
 
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement>) => {
-    e.currentTarget.src =
-      "https://placehold.co/300x300/1E293B/DC2626?text=Sem+Imagem";
-  };
-
   const getCategoryName = () => {
     if (!categoryId) return null;
     const category = categories.find((c) => c.id === categoryId);
     return category?.name;
+  };
+
+  const handleAddToCart = (product: Product) => {
+    // TODO: Implementar lógica de adicionar ao carrinho
+    console.log("Adicionar ao carrinho:", product);
+    alert(`${product.name} adicionado ao carrinho!`);
   };
 
   return (
@@ -144,84 +146,14 @@ export default function Products() {
           </div>
         ) : (
           <>
-            {/* Grid de produtos */}
+            {/* Grid de produtos com novo card */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {products.map((product) => (
-                <div
+                <ProductCard
                   key={product.id}
-                  className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300"
-                >
-                  {/* Imagem */}
-                  <div className="relative h-48 bg-gray-100">
-                    <img
-                      src={
-                        product.imageUrl ||
-                        "https://placehold.co/300x300/1E293B/DC2626?text=Sem+Imagem"
-                      }
-                      alt={product.name}
-                      onError={handleImageError}
-                      className="w-full h-full object-cover"
-                    />
-                    {product.salePrice && (
-                      <span className="absolute top-2 right-2 bg-primary text-white text-xs font-bold px-2 py-1 rounded">
-                        PROMOÇÃO
-                      </span>
-                    )}
-                    {product.stock === 0 && (
-                      <span className="absolute top-2 left-2 bg-gray-800 text-white text-xs font-bold px-2 py-1 rounded">
-                        SEM ESTOQUE
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Info */}
-                  <div className="p-4">
-                    <span className="text-xs text-gray-500 uppercase tracking-wide">
-                      {product.category.name}
-                    </span>
-
-                    <h3 className="mt-2 text-sm font-semibold text-gray-900 line-clamp-2 h-10">
-                      {product.name}
-                    </h3>
-
-                    <div className="mt-3">
-                      {product.salePrice ? (
-                        <div>
-                          <p className="text-xs text-gray-500 line-through">
-                            R$ {product.price.toFixed(2)}
-                          </p>
-                          <p className="text-lg font-bold text-primary">
-                            R$ {product.salePrice.toFixed(2)}
-                          </p>
-                        </div>
-                      ) : (
-                        <p className="text-lg font-bold text-gray-900">
-                          R$ {product.price.toFixed(2)}
-                        </p>
-                      )}
-                    </div>
-
-                    <p className="mt-2 text-xs text-gray-600">
-                      {product.stock > 0
-                        ? `${product.stock} em estoque`
-                        : "Indisponível"}
-                    </p>
-
-                    <button
-                      disabled={product.stock === 0}
-                      aria-label={`Adicionar ${product.name} ao carrinho`}
-                      className={`mt-4 w-full py-2 px-4 rounded-md font-medium text-sm transition-colors ${
-                        product.stock === 0
-                          ? "bg-gray-300 text-gray-500 cursor-not-allowed"
-                          : "bg-primary text-white hover:bg-primary-dark"
-                      }`}
-                    >
-                      {product.stock === 0
-                        ? "Indisponível"
-                        : "Adicionar ao Carrinho"}
-                    </button>
-                  </div>
-                </div>
+                  product={product}
+                  onAddToCart={handleAddToCart}
+                />
               ))}
             </div>
 
