@@ -3,7 +3,8 @@ import cors from "cors";
 import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
-import categoryRoutes from "./routes/categoryRoutes"; // ✅ NOVO
+import categoryRoutes from "./routes/categoryRoutes";
+import adminRoutes from "./routes/adminRoutes"; // ✅ NOVO
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -33,8 +34,11 @@ app.use("/auth", authRoutes);
 // Rotas de produtos
 app.use("/api/products", productRoutes);
 
-// Rotas de categorias ✅ NOVO
+// Rotas de categorias
 app.use("/api/categories", categoryRoutes);
+
+// Rotas de admin ✅ NOVO
+app.use("/api/admin", adminRoutes);
 
 // ========================================
 // 🚀 INICIAR SERVIDOR
