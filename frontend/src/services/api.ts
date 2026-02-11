@@ -117,9 +117,7 @@ export const productService = {
       url += `&search=${encodeURIComponent(search)}`;
     }
 
-    console.log(`🔍 Buscando produtos:`, { page, limit, categoryId, search });
     const response = await api.get(url);
-    console.log("📦 Resposta da API:", response.data);
     return response.data;
   },
 
@@ -174,6 +172,69 @@ export const categoryService = {
 
   getBySlug: async (slug: string) => {
     const response = await api.get(`/api/categories/slug/${slug}`);
+    return response.data;
+  },
+
+  create: async (data: {
+    name: string;
+    slug: string;
+    description?: string;
+  }) => {
+    const response = await api.post("/api/categories", data);
+    return response.data;
+  },
+
+  update: async (
+    id: string,
+    data: Partial<{ name: string; slug: string; description: string }>,
+  ) => {
+    const response = await api.put(`/api/categories/${id}`, data);
+    return response.data;
+  },
+
+  delete: async (id: string) => {
+    const response = await api.delete(`/api/categories/${id}`);
+    return response.data;
+  },
+};
+
+// ========================================
+// 👑 ADMIN SERVICES
+// ========================================
+
+export interface DashboardStats {
+  overview: {
+    totalProducts: number;
+    totalCategories: number;
+    activeProducts: number;
+    inactiveProducts: number;
+    lowStockProducts: number;
+    totalStock: number;
+  };
+  productsByCategory: Array<{
+    categoryId: string;
+    categoryName: string;
+    count: number;
+  }>;
+  lowStockProducts: Array<{
+    id: string;
+    name: string;
+    stock: number;
+    price: number;
+    category: {
+      name: string;
+    };
+  }>;
+}
+
+export const adminService = {
+  getStats: async (): Promise<{ success: boolean; data: DashboardStats }> => {
+    const response = await api.get("/api/admin/stats");
+    return response.data;
+  },
+
+  getLowStockProducts: async () => {
+    const response = await api.get("/api/admin/low-stock");
     return response.data;
   },
 };
