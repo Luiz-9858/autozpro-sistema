@@ -60,12 +60,7 @@ export default function Register() {
     }
 
     try {
-      await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        phone: formData.phone || undefined,
-      });
+      await register(formData.name, formData.email, formData.password);
       // Redirecionar para dashboard após sucesso
       navigate("/dashboard");
     } catch {
