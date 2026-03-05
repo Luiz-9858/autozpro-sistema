@@ -44,7 +44,7 @@ export default function Login() {
     }
 
     try {
-      await login(formData);
+      await login(formData.email, formData.password);
       // Redirecionar para dashboard após sucesso
       navigate("/dashboard");
     } catch {
