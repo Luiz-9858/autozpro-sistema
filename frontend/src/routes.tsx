@@ -21,13 +21,13 @@ import AdminCategories from "./pages/AdminCategories";
 // ========================================
 // 🔒 COMPONENTE: ProtectedRoute
 // ========================================
-/**
- * Protege rotas que requerem autenticação
- */
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
 
+  console.log("🔒 ProtectedRoute - User:", user);
+
   if (!user) {
+    console.log("❌ Redirecionando para login");
     return <Navigate to="/login" replace />;
   }
 
@@ -37,11 +37,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 // ========================================
 // 🔒 COMPONENTE: AdminRoute
 // ========================================
-/**
- * Protege rotas que requerem permissão admin
- */
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
+
+  console.log("👑 AdminRoute - Verificando acesso admin...");
+  console.log("   User:", user);
+  console.log("   Role:", user?.role);
 
   // Não autenticado
   if (!user) {
@@ -62,6 +63,19 @@ function AdminRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// ========================================
+// 🌐 LAYOUT PADRÃO (COM HEADER + FOOTER)
+// ========================================
+function PublicLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <>
+      <Header />
+      {children}
+      <Footer />
+    </>
+  );
+}
+
 export default function AppRoutes() {
   return (
     <Routes>
@@ -69,28 +83,46 @@ export default function AppRoutes() {
           🌐 ROTAS PÚBLICAS (COM HEADER + FOOTER)
           ======================================== */}
       <Route
-        path="/*"
+        path="/"
         element={
-          <>
-            <Header />
-            <Routes>
-              <Route path="/" element={<Home />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/products" element={<Products />} />
+          <PublicLayout>
+            <Home />
+          </PublicLayout>
+        }
+      />
+      <Route
+        path="/login"
+        element={
+          <PublicLayout>
+            <Login />
+          </PublicLayout>
+        }
+      />
+      <Route
+        path="/register"
+        element={
+          <PublicLayout>
+            <Register />
+          </PublicLayout>
+        }
+      />
+      <Route
+        path="/products"
+        element={
+          <PublicLayout>
+            <Products />
+          </PublicLayout>
+        }
+      />
 
-              {/* Rota protegida (usuário logado) */}
-              <Route
-                path="/dashboard"
-                element={
-                  <ProtectedRoute>
-                    <Dashboard />
-                  </ProtectedRoute>
-                }
-              />
-            </Routes>
-            <Footer />
-          </>
+      <Route
+        path="/dashboard"
+        element={
+          <PublicLayout>
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          </PublicLayout>
         }
       />
 
@@ -98,14 +130,13 @@ export default function AppRoutes() {
           👑 ROTAS ADMIN (SEM HEADER + FOOTER)
           ======================================== */}
       <Route
-        path="/admin/*"
+        path="/admin"
         element={
           <AdminRoute>
             <AdminLayout />
           </AdminRoute>
         }
       >
-        {/* Rotas aninhadas dentro do AdminLayout */}
         <Route index element={<AdminDashboard />} />
         <Route path="products" element={<AdminProducts />} />
         <Route path="categories" element={<AdminCategories />} />
