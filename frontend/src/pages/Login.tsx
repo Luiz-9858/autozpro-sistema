@@ -34,22 +34,50 @@ export default function Login() {
     // Limpar erro ao digitar
     if (error) clearError();
   };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validação básica
+    console.log("🔵 INICIANDO LOGIN...", formData);
+
     if (!formData.email || !formData.password) {
+      console.log("❌ Validação falhou!");
       return;
     }
 
     try {
+      console.log("🔄 Chamando função login...");
       await login(formData.email, formData.password);
-      // Redirecionar para dashboard após sucesso
-      navigate("/dashboard");
-    } catch {
-      // Erro já é tratado na store
-      console.log("Erro capturado no componente");
+      console.log("🟢 LOGIN SUCESSO!");
+
+      // Aguardar state atualizar
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
+      // Verificar localStorage
+      const token = localStorage.getItem("token");
+      const userStr = localStorage.getItem("user");
+
+      console.log("💾 Verificando localStorage:");
+      console.log("  Token:", token);
+      console.log("  User:", userStr);
+
+      if (!token || !userStr) {
+        console.error("🚨 PROBLEMA: Token ou User não foi salvo!");
+        return;
+      }
+
+      // Redirecionar baseado no role
+      const user = JSON.parse(userStr);
+      console.log("👤 User role:", user.role);
+
+      if (user.role === "admin") {
+        console.log("🔄 Redirecionando para /admin");
+        navigate("/admin");
+      } else {
+        console.log("🔄 Redirecionando para /dashboard");
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      console.log("❌ Erro capturado no componente:", error);
     }
   };
 
@@ -70,7 +98,7 @@ export default function Login() {
           Ou{" "}
           <Link
             to="/register"
-            className="font-medium text-primary hover:text-blue-700"
+            className="font-medium text-primary hover:text-red-700"
           >
             crie uma conta gratuita
           </Link>
@@ -169,7 +197,7 @@ export default function Login() {
               <div className="text-sm">
                 <a
                   href="#"
-                  className="font-medium text-primary hover:text-blue-700"
+                  className="font-medium text-primary hover:text-red-700"
                 >
                   Esqueceu a senha?
                 </a>
