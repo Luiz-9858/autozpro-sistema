@@ -17,6 +17,7 @@ import Products from "./pages/Products";
 import AdminDashboard from "./pages/AdminDashboard";
 import AdminProducts from "./pages/AdminProducts";
 import AdminCategories from "./pages/AdminCategories";
+import ProductFormPage from "./pages/ProductFormPage";
 
 // ========================================
 // 🔒 COMPONENTE: ProtectedRoute
@@ -139,6 +140,8 @@ export default function AppRoutes() {
       >
         <Route index element={<AdminDashboard />} />
         <Route path="products" element={<AdminProducts />} />
+        <Route path="products/new" element={<ProductFormPage />} />
+        <Route path="products/edit/:id" element={<ProductFormPage />} />
         <Route path="categories" element={<AdminCategories />} />
       </Route>
     </Routes>
