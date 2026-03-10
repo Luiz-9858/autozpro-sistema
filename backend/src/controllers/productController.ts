@@ -14,7 +14,6 @@ interface PaginationQuery {
 
 interface ProductCreateData {
   name: string;
-  slug: string;
   sku: string;
   description?: string;
   price: number;
@@ -22,6 +21,18 @@ interface ProductCreateData {
   stock: number;
   imageUrl?: string;
   categoryId: string;
+}
+
+interface ProductUpdateData {
+  name?: string;
+  sku?: string;
+  description?: string;
+  price?: number;
+  salePrice?: number;
+  stock?: number;
+  imageUrl?: string;
+  categoryId?: string;
+  isActive?: boolean;
 }
 
 // ========================================
@@ -168,7 +179,6 @@ export const getProductById = async (
 // ========================================
 // ➕ CREATE PRODUCT
 // ========================================
-
 export const createProduct = async (
   req: Request<{}, {}, ProductCreateData>,
   res: Response,
@@ -176,7 +186,6 @@ export const createProduct = async (
   try {
     const {
       name,
-      slug,
       sku,
       description,
       price,
@@ -186,10 +195,20 @@ export const createProduct = async (
       categoryId,
     } = req.body;
 
+    // 🔧 Gerar slug automaticamente a partir do nome
+    const slug = name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+      .replace(/[^\w\s-]/g, "") // Remove caracteres especiais
+      .replace(/\s+/g, "-") // Substitui espaços por hífens
+      .replace(/-+/g, "-") // Remove hífens duplicados
+      .trim();
+
     const product = await prisma.product.create({
       data: {
         name,
-        slug,
+        slug, // ← Slug gerado automaticamente
         sku,
         description: description || null,
         price,
@@ -205,6 +224,7 @@ export const createProduct = async (
 
     res.status(201).json({
       success: true,
+      message: "Produto criado com sucesso",
       data: product,
     });
   } catch (error) {
@@ -212,7 +232,6 @@ export const createProduct = async (
     res.status(500).json({
       success: false,
       message: "Erro ao criar produto",
-      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
 };
@@ -222,16 +241,49 @@ export const createProduct = async (
 // ========================================
 
 export const updateProduct = async (
-  req: Request<{ id: string }, {}, Partial<ProductCreateData>>,
+  req: Request<{ id: string }, {}, ProductUpdateData>,
   res: Response,
 ): Promise<void> => {
   try {
     const { id } = req.params;
-    const updateData = req.body;
+    const {
+      name,
+      sku,
+      description,
+      price,
+      salePrice,
+      stock,
+      imageUrl,
+      categoryId,
+      isActive,
+    } = req.body;
+
+    // 🔧 Gerar slug automaticamente se o nome foi fornecido
+    const slug = name
+      ? name
+          .toLowerCase()
+          .normalize("NFD")
+          .replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^\w\s-]/g, "")
+          .replace(/\s+/g, "-")
+          .replace(/-+/g, "-")
+          .trim()
+      : undefined;
 
     const product = await prisma.product.update({
       where: { id },
-      data: updateData,
+      data: {
+        name,
+        slug, // ← Slug gerado automaticamente
+        sku,
+        description: description || null,
+        price,
+        salePrice: salePrice || null,
+        stock,
+        imageUrl: imageUrl || null,
+        categoryId,
+        isActive,
+      },
       include: {
         category: true,
       },
@@ -239,6 +291,7 @@ export const updateProduct = async (
 
     res.json({
       success: true,
+      message: "Produto atualizado com sucesso",
       data: product,
     });
   } catch (error) {
@@ -246,7 +299,6 @@ export const updateProduct = async (
     res.status(500).json({
       success: false,
       message: "Erro ao atualizar produto",
-      error: error instanceof Error ? error.message : "Erro desconhecido",
     });
   }
 };
