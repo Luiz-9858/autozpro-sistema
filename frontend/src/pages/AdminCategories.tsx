@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
+import toast from "react-hot-toast";
 import { categoryService } from "../services/api";
 import type { Category } from "../services/api";
 
 export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [showForm, setShowForm] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
 
@@ -23,14 +23,13 @@ export default function AdminCategories() {
   const fetchCategories = async () => {
     try {
       setLoading(true);
-      setError("");
       const response = await categoryService.getAll();
       if (response.success) {
         setCategories(response.data);
       }
     } catch (err) {
       console.error("Erro ao buscar categorias:", err);
-      setError("Erro ao carregar categorias");
+      toast.error("Erro ao carregar categorias");
     } finally {
       setLoading(false);
     }
@@ -43,11 +42,11 @@ export default function AdminCategories() {
       if (editingCategory) {
         // Editar
         await categoryService.update(editingCategory.id, formData);
-        alert("Categoria atualizada com sucesso!");
+        toast.success("Categoria atualizada com sucesso!");
       } else {
         // Criar
         await categoryService.create(formData);
-        alert("Categoria criada com sucesso!");
+        toast.success("Categoria criada com sucesso!");
       }
 
       resetForm();
@@ -57,9 +56,9 @@ export default function AdminCategories() {
       const errorMessage =
         err instanceof Error && "response" in err
           ? (err as Error & { response?: { data?: { message?: string } } })
-              .response?.data?.message
+              .response?.data?.message || "Erro ao salvar categoria"
           : "Erro ao salvar categoria";
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -75,8 +74,9 @@ export default function AdminCategories() {
 
   const handleDelete = async (category: Category) => {
     if (category.productCount > 0) {
-      alert(
+      toast.error(
         `Não é possível deletar "${category.name}" pois existem ${category.productCount} produtos associados.`,
+        { duration: 5000 },
       );
       return;
     }
@@ -87,16 +87,16 @@ export default function AdminCategories() {
 
     try {
       await categoryService.delete(category.id);
-      alert("Categoria deletada com sucesso!");
+      toast.success("Categoria deletada com sucesso!");
       fetchCategories();
     } catch (err) {
       console.error("Erro ao deletar categoria:", err);
       const errorMessage =
         err instanceof Error && "response" in err
           ? (err as Error & { response?: { data?: { message?: string } } })
-              .response?.data?.message
+              .response?.data?.message || "Erro ao deletar categoria"
           : "Erro ao deletar categoria";
-      alert(errorMessage);
+      toast.error(errorMessage);
     }
   };
 
@@ -151,13 +151,6 @@ export default function AdminCategories() {
           </button>
         )}
       </div>
-
-      {/* Erro */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
 
       {/* Formulário */}
       {showForm && (
