@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import toast from "react-hot-toast";
 import { categoryService } from "../services/api";
 import type { Category } from "../services/api";
+import { CategoryCardSkeleton } from "../components/Skeleton";
 
 export default function AdminCategories() {
   const [categories, setCategories] = useState<Category[]>([]);
@@ -123,14 +124,6 @@ export default function AdminCategories() {
     });
   };
 
-  if (loading) {
-    return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -228,54 +221,60 @@ export default function AdminCategories() {
 
       {/* Lista de Categorias */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {categories.map((category) => (
-          <div
-            key={category.id}
-            className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-primary"
-          >
-            <div className="flex justify-between items-start mb-3">
-              <h3 className="text-lg font-bold text-gray-900">
-                {category.name}
-              </h3>
-              <span className="bg-primary text-white text-xs font-semibold px-2 py-1 rounded">
-                {category.productCount}
-              </span>
-            </div>
-
-            <p className="text-sm text-gray-600 mb-1">
-              <strong>Slug:</strong> {category.slug}
-            </p>
-
-            {category.description && (
-              <p className="text-sm text-gray-600 mb-4 line-clamp-2">
-                {category.description}
-              </p>
-            )}
-
-            <div className="flex gap-2 mt-4">
-              <button
-                onClick={() => handleEdit(category)}
-                className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+        {loading
+          ? // 💀 SKELETON LOADING
+            Array.from({ length: 6 }).map((_, index) => (
+              <CategoryCardSkeleton key={index} />
+            ))
+          : // ✅ DADOS REAIS
+            categories.map((category) => (
+              <div
+                key={category.id}
+                className="bg-white rounded-lg shadow-sm p-6 border-l-4 border-primary"
               >
-                <i className="fas fa-edit mr-2"></i>
-                Editar
-              </button>
-              <button
-                onClick={() => handleDelete(category)}
-                disabled={category.productCount > 0}
-                className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
-                title={
-                  category.productCount > 0
-                    ? "Não é possível deletar categoria com produtos"
-                    : "Deletar categoria"
-                }
-              >
-                <i className="fas fa-trash mr-2"></i>
-                Deletar
-              </button>
-            </div>
-          </div>
-        ))}
+                <div className="flex justify-between items-start mb-3">
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {category.name}
+                  </h3>
+                  <span className="bg-primary text-white text-xs font-semibold px-2 py-1 rounded">
+                    {category.productCount}
+                  </span>
+                </div>
+
+                <p className="text-sm text-gray-600 mb-1">
+                  <strong>Slug:</strong> {category.slug}
+                </p>
+
+                {category.description && (
+                  <p className="text-sm text-gray-600 mb-4 line-clamp-2">
+                    {category.description}
+                  </p>
+                )}
+
+                <div className="flex gap-2 mt-4">
+                  <button
+                    onClick={() => handleEdit(category)}
+                    className="flex-1 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition text-sm"
+                  >
+                    <i className="fas fa-edit mr-2"></i>
+                    Editar
+                  </button>
+                  <button
+                    onClick={() => handleDelete(category)}
+                    disabled={category.productCount > 0}
+                    className="flex-1 bg-red-600 text-white px-4 py-2 rounded-lg hover:bg-red-700 transition text-sm disabled:opacity-50 disabled:cursor-not-allowed"
+                    title={
+                      category.productCount > 0
+                        ? "Não é possível deletar categoria com produtos"
+                        : "Deletar categoria"
+                    }
+                  >
+                    <i className="fas fa-trash mr-2"></i>
+                    Deletar
+                  </button>
+                </div>
+              </div>
+            ))}
       </div>
     </div>
   );
