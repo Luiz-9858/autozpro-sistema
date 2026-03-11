@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
+import toast from "react-hot-toast";
 import { productService, categoryService } from "../services/api";
 import type { Category } from "../services/api";
 
@@ -23,7 +24,6 @@ export default function ProductFormPage() {
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(false);
   const [loadingData, setLoadingData] = useState(isEditing);
-  const [error, setError] = useState("");
 
   const [formData, setFormData] = useState<ProductFormData>({
     name: "",
@@ -43,7 +43,6 @@ export default function ProductFormPage() {
     if (isEditing) {
       fetchProduct();
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEditing]);
 
@@ -55,7 +54,7 @@ export default function ProductFormPage() {
       }
     } catch (err) {
       console.error("Erro ao buscar categorias:", err);
-      setError("Erro ao carregar categorias");
+      toast.error("Erro ao carregar categorias");
     }
   };
 
@@ -82,7 +81,7 @@ export default function ProductFormPage() {
       }
     } catch (err) {
       console.error("Erro ao buscar produto:", err);
-      setError("Erro ao carregar produto");
+      toast.error("Erro ao carregar produto");
     } finally {
       setLoadingData(false);
     }
@@ -105,31 +104,30 @@ export default function ProductFormPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError("");
 
     // Validações
     if (!formData.name.trim()) {
-      setError("Nome do produto é obrigatório");
+      toast.error("Nome do produto é obrigatório");
       return;
     }
 
     if (!formData.sku.trim()) {
-      setError("SKU é obrigatório");
+      toast.error("SKU é obrigatório");
       return;
     }
 
     if (!formData.price || parseFloat(formData.price) <= 0) {
-      setError("Preço deve ser maior que zero");
+      toast.error("Preço deve ser maior que zero");
       return;
     }
 
     if (!formData.stock || parseInt(formData.stock) < 0) {
-      setError("Estoque deve ser maior ou igual a zero");
+      toast.error("Estoque deve ser maior ou igual a zero");
       return;
     }
 
     if (!formData.categoryId) {
-      setError("Selecione uma categoria");
+      toast.error("Selecione uma categoria");
       return;
     }
 
@@ -151,10 +149,10 @@ export default function ProductFormPage() {
 
       if (isEditing) {
         await productService.update(id, productData);
-        alert("Produto atualizado com sucesso!");
+        toast.success("Produto atualizado com sucesso!");
       } else {
         await productService.create(productData);
-        alert("Produto criado com sucesso!");
+        toast.success("Produto criado com sucesso!");
       }
 
       navigate("/admin/products");
@@ -165,7 +163,7 @@ export default function ProductFormPage() {
           ? (err as Error & { response?: { data?: { message?: string } } })
               .response?.data?.message || "Erro ao salvar produto"
           : "Erro ao salvar produto";
-      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setLoading(false);
     }
@@ -201,13 +199,6 @@ export default function ProductFormPage() {
           </p>
         </div>
       </div>
-
-      {/* Erro */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
 
       {/* Formulário */}
       <form
