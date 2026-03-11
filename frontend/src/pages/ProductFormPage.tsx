@@ -3,6 +3,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import toast from "react-hot-toast";
 import { productService, categoryService } from "../services/api";
 import type { Category } from "../services/api";
+import { FormSkeleton } from "../components/Skeleton";
 
 interface ProductFormData {
   name: string;
@@ -169,10 +170,21 @@ export default function ProductFormPage() {
     }
   };
 
+  // 💀 SKELETON LOADING ao carregar produto para edição
   if (loadingData) {
     return (
-      <div className="flex justify-center items-center h-64">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      <div className="space-y-6">
+        {/* Header Skeleton */}
+        <div className="flex items-center gap-4">
+          <div className="h-6 w-6 bg-gray-200 rounded animate-pulse" />
+          <div className="space-y-2">
+            <div className="h-8 w-48 bg-gray-200 rounded animate-pulse" />
+            <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
+          </div>
+        </div>
+
+        {/* Form Skeleton */}
+        <FormSkeleton />
       </div>
     );
   }
