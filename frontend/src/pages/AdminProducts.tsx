@@ -1,12 +1,12 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
+import toast from "react-hot-toast";
 import { productService } from "../services/api";
 import type { Product } from "../services/api";
 
 export default function AdminProducts() {
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -19,7 +19,6 @@ export default function AdminProducts() {
   const fetchProducts = async (page: number) => {
     try {
       setLoading(true);
-      setError("");
       const response = await productService.getAll(
         page,
         20,
@@ -32,7 +31,7 @@ export default function AdminProducts() {
       }
     } catch (err) {
       console.error("Erro ao buscar produtos:", err);
-      setError("Erro ao carregar produtos");
+      toast.error("Erro ao carregar produtos");
     } finally {
       setLoading(false);
     }
@@ -55,11 +54,11 @@ export default function AdminProducts() {
 
     try {
       await productService.delete(id);
-      alert("Produto deletado com sucesso!");
+      toast.success("Produto deletado com sucesso!");
       fetchProducts(currentPage);
     } catch (err) {
       console.error("Erro ao deletar produto:", err);
-      alert("Erro ao deletar produto. Tente novamente.");
+      toast.error("Erro ao deletar produto. Tente novamente.");
     }
   };
 
@@ -68,10 +67,15 @@ export default function AdminProducts() {
       await productService.update(product.id, {
         isActive: !product.isActive,
       });
+      toast.success(
+        product.isActive
+          ? "Produto desativado com sucesso!"
+          : "Produto ativado com sucesso!",
+      );
       fetchProducts(currentPage);
     } catch (err) {
       console.error("Erro ao atualizar produto:", err);
-      alert("Erro ao atualizar produto");
+      toast.error("Erro ao atualizar produto");
     }
   };
 
@@ -118,13 +122,6 @@ export default function AdminProducts() {
           <i className="fas fa-search"></i>
         </button>
       </form>
-
-      {/* Erro */}
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded">
-          {error}
-        </div>
-      )}
 
       {/* Tabela */}
       <div className="bg-white rounded-lg shadow-sm overflow-hidden">
