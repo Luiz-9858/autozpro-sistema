@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import toast from "react-hot-toast";
 import { useAuthStore } from "../store/authStore";
 
 export default function Login() {
   const navigate = useNavigate();
-  const { login, isLoading, error, clearError, user } = useAuthStore();
+  const { login, isLoading, clearError, user } = useAuthStore();
 
   const [formData, setFormData] = useState({
     email: "",
@@ -32,22 +33,19 @@ export default function Login() {
       [name]: value,
     }));
     // Limpar erro ao digitar
-    if (error) clearError();
+    clearError();
   };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    console.log("🔵 INICIANDO LOGIN...", formData);
-
     if (!formData.email || !formData.password) {
-      console.log("❌ Validação falhou!");
+      toast.error("Preencha todos os campos");
       return;
     }
 
     try {
-      console.log("🔄 Chamando função login...");
       await login(formData.email, formData.password);
-      console.log("🟢 LOGIN SUCESSO!");
 
       // Aguardar state atualizar
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -56,28 +54,24 @@ export default function Login() {
       const token = localStorage.getItem("token");
       const userStr = localStorage.getItem("user");
 
-      console.log("💾 Verificando localStorage:");
-      console.log("  Token:", token);
-      console.log("  User:", userStr);
-
       if (!token || !userStr) {
-        console.error("🚨 PROBLEMA: Token ou User não foi salvo!");
+        toast.error("Erro ao fazer login. Tente novamente.");
         return;
       }
 
       // Redirecionar baseado no role
       const user = JSON.parse(userStr);
-      console.log("👤 User role:", user.role);
 
       if (user.role === "admin") {
-        console.log("🔄 Redirecionando para /admin");
+        toast.success(`Bem-vindo de volta, ${user.name}!`);
         navigate("/admin");
       } else {
-        console.log("🔄 Redirecionando para /dashboard");
+        toast.success(`Bem-vindo, ${user.name}!`);
         navigate("/dashboard");
       }
     } catch (error) {
-      console.log("❌ Erro capturado no componente:", error);
+      console.error("❌ Erro no login:", error);
+      toast.error("Email ou senha incorretos");
     }
   };
 
@@ -107,19 +101,6 @@ export default function Login() {
 
       <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
         <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10">
-          {/* Mensagem de Erro */}
-          {error && (
-            <div className="mb-4 bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded relative">
-              <span className="block sm:inline">{error}</span>
-              <button
-                onClick={clearError}
-                className="absolute top-0 bottom-0 right-0 px-4 py-3"
-              >
-                <span className="text-2xl">&times;</span>
-              </button>
-            </div>
-          )}
-
           <form className="space-y-6" onSubmit={handleSubmit}>
             {/* Email */}
             <div>
