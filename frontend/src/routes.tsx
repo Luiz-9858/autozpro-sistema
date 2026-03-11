@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from "react-router-dom";
+import { useEffect, useState } from "react";
 import { useAuthStore } from "./store/authStore";
 
 // Layouts
@@ -25,10 +26,7 @@ import ProductFormPage from "./pages/ProductFormPage";
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
 
-  console.log("🔒 ProtectedRoute - User:", user);
-
   if (!user) {
-    console.log("❌ Redirecionando para login");
     return <Navigate to="/login" replace />;
   }
 
@@ -40,27 +38,38 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 // ========================================
 function AdminRoute({ children }: { children: React.ReactNode }) {
   const user = useAuthStore((state) => state.user);
+  const [isChecking, setIsChecking] = useState(true);
 
-  console.log("👑 AdminRoute - Verificando acesso admin...");
-  console.log("   User:", user);
-  console.log("   Role:", user?.role);
+  // Esperar o auth carregar antes de verificar
+  useEffect(() => {
+    // Dar tempo para o checkAuth() do App.tsx executar
+    const timer = setTimeout(() => {
+      setIsChecking(false);
+    }, 100);
 
-  // Não autenticado
+    return () => clearTimeout(timer);
+  }, []);
+
+  // 🔄 Ainda verificando autenticação
+  if (isChecking) {
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  // ❌ Não autenticado
   if (!user) {
-    console.log("❌ Acesso negado: usuário não autenticado");
     return <Navigate to="/login" replace />;
   }
 
-  // Não é admin
+  // ❌ Não é admin
   if (user.role !== "admin") {
-    console.log("❌ Acesso negado: usuário não é admin");
-    console.log("   User role:", user.role);
-    alert("Acesso negado. Apenas administradores podem acessar esta área.");
     return <Navigate to="/" replace />;
   }
 
   // ✅ É admin
-  console.log("✅ Acesso admin permitido:", user.email);
   return <>{children}</>;
 }
 
