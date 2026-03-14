@@ -5,6 +5,7 @@ import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
 import adminRoutes from "./routes/adminRoutes"; // ✅ NOVO
+import uploadRoutes from "./routes/uploadRoutes"; // ✅ NOVO
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -39,6 +40,9 @@ app.use("/api/categories", categoryRoutes);
 
 // Rotas de admin ✅ NOVO
 app.use("/api/admin", adminRoutes);
+
+// Rotas de upload ✅ NOVO
+app.use("/api/upload", uploadRoutes);
 
 // ========================================
 // 🚀 INICIAR SERVIDOR
