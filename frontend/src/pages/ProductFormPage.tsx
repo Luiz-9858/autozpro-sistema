@@ -4,6 +4,7 @@ import toast from "react-hot-toast";
 import { productService, categoryService } from "../services/api";
 import type { Category } from "../services/api";
 import { FormSkeleton } from "../components/Skeleton";
+import ImageUpload from "../components/ImageUpload";
 
 interface ProductFormData {
   name: string;
@@ -101,6 +102,11 @@ export default function ProductFormPage() {
     } else {
       setFormData((prev) => ({ ...prev, [name]: value }));
     }
+  };
+
+  // 🖼️ Handler para quando a imagem é enviada
+  const handleImageUploaded = (imageUrl: string) => {
+    setFormData((prev) => ({ ...prev, imageUrl }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -220,11 +226,15 @@ export default function ProductFormPage() {
         {/* Nome e SKU */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="name"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Nome do Produto *
             </label>
             <input
               type="text"
+              id="name"
               name="name"
               value={formData.name}
               onChange={handleChange}
@@ -235,11 +245,15 @@ export default function ProductFormPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="sku"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               SKU (Código) *
             </label>
             <input
               type="text"
+              id="sku"
               name="sku"
               value={formData.sku}
               onChange={handleChange}
@@ -252,10 +266,14 @@ export default function ProductFormPage() {
 
         {/* Descrição */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label
+            htmlFor="description"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
             Descrição
           </label>
           <textarea
+            id="description"
             name="description"
             value={formData.description}
             onChange={handleChange}
@@ -268,11 +286,15 @@ export default function ProductFormPage() {
         {/* Preços */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="price"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Preço (R$) *
             </label>
             <input
               type="number"
+              id="price"
               name="price"
               value={formData.price}
               onChange={handleChange}
@@ -285,11 +307,15 @@ export default function ProductFormPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="salePrice"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Preço Promocional (R$)
             </label>
             <input
               type="number"
+              id="salePrice"
               name="salePrice"
               value={formData.salePrice}
               onChange={handleChange}
@@ -307,11 +333,15 @@ export default function ProductFormPage() {
         {/* Estoque e Categoria */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="stock"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Estoque *
             </label>
             <input
               type="number"
+              id="stock"
               name="stock"
               value={formData.stock}
               onChange={handleChange}
@@ -323,10 +353,14 @@ export default function ProductFormPage() {
           </div>
 
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-2">
+            <label
+              htmlFor="categoryId"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
               Categoria *
             </label>
             <select
+              id="categoryId"
               name="categoryId"
               value={formData.categoryId}
               onChange={handleChange}
@@ -344,21 +378,18 @@ export default function ProductFormPage() {
           </div>
         </div>
 
-        {/* URL da Imagem */}
+        {/* 🖼️ UPLOAD DE IMAGEM (NOVO) */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
-            URL da Imagem
+            Imagem do Produto
           </label>
-          <input
-            type="url"
-            name="imageUrl"
-            value={formData.imageUrl}
-            onChange={handleChange}
-            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
-            placeholder="https://exemplo.com/imagem.jpg"
+          <ImageUpload
+            onImageUploaded={handleImageUploaded}
+            currentImageUrl={formData.imageUrl}
+            disabled={loading}
           />
-          <p className="text-xs text-gray-500 mt-1">
-            Cole a URL de uma imagem online (opcional)
+          <p className="text-xs text-gray-500 mt-2">
+            Faça upload de uma imagem ou deixe em branco para usar imagem padrão
           </p>
         </div>
 
