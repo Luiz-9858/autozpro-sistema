@@ -34,7 +34,12 @@ export const uploadImage = async (req: MulterRequest, res: Response) => {
       folder: "b77-autoparts/products", // Pasta no Cloudinary
       resource_type: "image",
       transformation: [
-        { width: 800, height: 800, crop: "limit" }, // Limita tamanho máximo
+        {
+          width: 800,
+          height: 800,
+          crop: "pad", // Adiciona padding para uniformizar
+          background: "white", // Fundo branco
+        },
         { quality: "auto:good" }, // Otimiza qualidade
         { fetch_format: "auto" }, // Formato automático (webp quando possível)
       ],
