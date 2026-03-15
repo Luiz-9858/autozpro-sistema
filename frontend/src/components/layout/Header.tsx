@@ -1,13 +1,12 @@
 import { Link, useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../store/authStore";
-import { useCartStore } from "../../store/cartStore";
 import { useState, useEffect } from "react";
 import { categoryService } from "../../services/api";
 import type { Category } from "../../services/api";
+import CartBadge from "../CartBadge";
 
 export default function Header() {
   const { user, logout } = useAuthStore();
-  const { items } = useCartStore();
   const navigate = useNavigate();
   const [categories, setCategories] = useState<Category[]>([]);
   const [searchTerm, setSearchTerm] = useState("");
@@ -48,11 +47,6 @@ export default function Header() {
   const handleCategoryClick = (categoryId: string) => {
     navigate(`/products?categoryId=${categoryId}`);
   };
-
-  const cartItemsCount = items.reduce(
-    (total, item) => total + item.quantity,
-    0,
-  );
 
   return (
     <header className="bg-white shadow-md sticky top-0 z-50">
@@ -146,18 +140,11 @@ export default function Header() {
               <span className="text-xs">Favoritos</span>
             </Link>
 
-            <Link
-              to="/cart"
-              className="flex flex-col items-center text-gray-700 hover:text-primary transition-colors relative"
-            >
-              <i className="fas fa-shopping-cart text-xl mb-1"></i>
-              <span className="text-xs">Carrinho</span>
-              {cartItemsCount > 0 && (
-                <span className="absolute -top-1 -right-1 bg-primary text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
-                  {cartItemsCount}
-                </span>
-              )}
-            </Link>
+            {/* 🛒 CARTBADGE (NOVO) */}
+            <div className="flex flex-col items-center">
+              <CartBadge />
+              <span className="text-xs text-gray-700 mt-1">Carrinho</span>
+            </div>
           </div>
         </div>
       </div>
