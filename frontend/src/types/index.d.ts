@@ -33,11 +33,15 @@ export interface RegisterData {
 export interface Product {
   id: string;
   name: string;
-  description: string;
+  description: string | null;
   price: number;
-  imageUrl: string;
+  salePrice: number | null; // ✅ NOVO: Preço promocional
+  imageUrl: string | null;
   category: string;
+  categoryId: string; // ✅ NOVO: ID da categoria
   stock: number;
+  sku: string; // ✅ NOVO: Código do produto
+  isActive: boolean; // ✅ NOVO: Se está ativo
   rating?: number;
   reviews?: number;
 }
@@ -47,14 +51,20 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
-  imageUrl: string;
+  description?: string | null;
+  imageUrl?: string | null;
   productCount: number;
 }
 
-// Item do carrinho
+// Item do carrinho (estrutura otimizada)
 export interface CartItem {
-  product: Product;
+  id: string; // ID do produto
+  name: string;
+  price: number;
+  salePrice: number | null;
+  imageUrl: string | null;
   quantity: number;
+  stock: number; // Para validar quantidade máxima
 }
 
 // Erro de API
