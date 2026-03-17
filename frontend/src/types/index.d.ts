@@ -29,21 +29,26 @@ export interface RegisterData {
   telefone: string;
 }
 
-// Produto
+// Produto (ALINHADO COM API.TS)
 export interface Product {
   id: string;
   name: string;
+  slug: string;
+  sku: string;
   description: string | null;
   price: number;
-  salePrice: number | null; // ✅ NOVO: Preço promocional
-  imageUrl: string | null;
-  category: string;
-  categoryId: string; // ✅ NOVO: ID da categoria
+  salePrice: number | null;
   stock: number;
-  sku: string; // ✅ NOVO: Código do produto
-  isActive: boolean; // ✅ NOVO: Se está ativo
-  rating?: number;
-  reviews?: number;
+  imageUrl: string | null;
+  isActive: boolean;
+  categoryId: string;
+  category: {
+    id: string;
+    name: string;
+    slug: string;
+  };
+  createdAt: string;
+  updatedAt: string;
 }
 
 // Categoria
