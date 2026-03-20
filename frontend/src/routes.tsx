@@ -13,6 +13,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
+import Cart from "./pages/Cart";
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard";
@@ -121,6 +122,16 @@ export default function AppRoutes() {
         element={
           <PublicLayout>
             <Products />
+          </PublicLayout>
+        }
+      />
+
+      {/* 🛒 ROTA DO CARRINHO (NOVO) */}
+      <Route
+        path="/cart"
+        element={
+          <PublicLayout>
+            <Cart />
           </PublicLayout>
         }
       />
