@@ -1,25 +1,16 @@
 import { useState } from "react";
 import type { Product } from "../../services/api";
+import AddToCartButton from "../AddToCartButton";
 
 interface ProductCardProps {
   product: Product;
-  onAddToCart?: (product: Product) => void;
 }
 
-export default function ProductCard({
-  product,
-  onAddToCart,
-}: ProductCardProps) {
+export default function ProductCard({ product }: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => {
     setImageError(true);
-  };
-
-  const handleAddToCart = () => {
-    if (onAddToCart && product.stock > 0) {
-      onAddToCart(product);
-    }
   };
 
   const discountPercentage = product.salePrice
@@ -38,7 +29,7 @@ export default function ProductCard({
           }
           alt={product.name}
           onError={handleImageError}
-          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
         />
 
         {/* Badges */}
@@ -137,29 +128,13 @@ export default function ProductCard({
           )}
         </div>
 
-        {/* Botão Adicionar ao Carrinho */}
-        <button
-          onClick={handleAddToCart}
-          disabled={product.stock === 0}
-          aria-label={`Adicionar ${product.name} ao carrinho`}
-          className={`w-full py-3 px-4 rounded-lg font-semibold text-sm transition-all duration-200 ${
-            product.stock === 0
-              ? "bg-gray-200 text-gray-500 cursor-not-allowed"
-              : "bg-primary text-white hover:bg-red-700 hover:shadow-lg active:scale-95"
-          }`}
-        >
-          {product.stock === 0 ? (
-            <>
-              <i className="fas fa-ban mr-2"></i>
-              Indisponível
-            </>
-          ) : (
-            <>
-              <i className="fas fa-shopping-cart mr-2"></i>
-              Adicionar ao Carrinho
-            </>
-          )}
-        </button>
+        {/* 🛒 BOTÃO ADICIONAR AO CARRINHO (INTEGRADO) */}
+        <AddToCartButton
+          product={product}
+          variant="primary"
+          size="md"
+          fullWidth
+        />
 
         {/* Link Ver Detalhes */}
         {product.stock > 0 && (
