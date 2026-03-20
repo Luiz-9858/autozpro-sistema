@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
 import { useCartStore } from "../store/cartStore";
 import type { Product } from "../types/index";
@@ -7,7 +7,7 @@ import type { Product } from "../types/index";
  * 🛒 COMPONENTE: AddToCartButton
  *
  * Botão para adicionar produto ao carrinho.
- * Mostra feedback visual e valida estoque.
+ * Sincroniza stock automaticamente antes de adicionar.
  */
 
 interface AddToCartButtonProps {
@@ -25,12 +25,20 @@ export default function AddToCartButton({
   fullWidth = false,
   showIcon = true,
 }: AddToCartButtonProps) {
-  const { addItem, getItemQuantity, isInCart } = useCartStore();
+  const { addItem, getItemQuantity, isInCart, syncItemWithProduct } =
+    useCartStore();
   const [isAdding, setIsAdding] = useState(false);
 
   const quantityInCart = getItemQuantity(product.id);
   const isProductInCart = isInCart(product.id);
   const canAddMore = quantityInCart < product.stock;
+
+  // Sincronizar produto ao montar componente
+  useEffect(() => {
+    if (isProductInCart) {
+      syncItemWithProduct(product);
+    }
+  }, [product, isProductInCart, syncItemWithProduct]);
 
   // Handler de adicionar ao carrinho
   const handleAddToCart = async () => {
@@ -49,6 +57,10 @@ export default function AddToCartButton({
     setIsAdding(true);
 
     try {
+      // Sincronizar antes de adicionar (garante stock atualizado)
+      syncItemWithProduct(product);
+
+      // Adicionar ao carrinho
       addItem(product);
 
       if (isProductInCart) {
