@@ -6,7 +6,7 @@ import type { Product, CartItem } from "../types/index";
  * 🛒 STORE: Carrinho de Compras
  *
  * Gerencia itens do carrinho com persistência no localStorage.
- * Validações: estoque, preço promocional, duplicatas.
+ * Sincroniza stock e preços automaticamente.
  */
 
 interface CartState {
@@ -14,11 +14,14 @@ interface CartState {
   addItem: (product: Product) => void;
   removeItem: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
+  incrementQuantity: (productId: string, maxStock: number) => void;
+  decrementQuantity: (productId: string) => void;
   clearCart: () => void;
   getTotalPrice: () => number;
   getTotalItems: () => number;
   getItemQuantity: (productId: string) => number;
   isInCart: (productId: string) => boolean;
+  syncItemWithProduct: (product: Product) => void;
 }
 
 export const useCartStore = create<CartState>()(
@@ -30,18 +33,53 @@ export const useCartStore = create<CartState>()(
       items: [],
 
       // ========================================
+      // 🔄 SINCRONIZAR ITEM COM PRODUTO
+      // ========================================
+      syncItemWithProduct: (product) => {
+        const items = get().items;
+        const existingItem = items.find((item) => item.id === product.id);
+
+        if (existingItem) {
+          // Atualiza dados do produto (stock, preço, etc)
+          set({
+            items: items.map((item) =>
+              item.id === product.id
+                ? {
+                    ...item,
+                    stock: product.stock,
+                    price: product.price,
+                    salePrice: product.salePrice,
+                    imageUrl: product.imageUrl,
+                    name: product.name,
+                  }
+                : item,
+            ),
+          });
+        }
+      },
+
+      // ========================================
       // ➕ ADICIONAR ITEM
       // ========================================
       addItem: (product) => {
         const items = get().items;
         const existingItem = items.find((item) => item.id === product.id);
 
-        // Produto já está no carrinho
+        // Validar estoque disponível
+        if (product.stock <= 0) {
+          console.warn(`Produto fora de estoque: ${product.name}`);
+          return;
+        }
+
         if (existingItem) {
-          // Validar estoque antes de aumentar
+          // Produto já está no carrinho
+          // Sincronizar dados primeiro
+          get().syncItemWithProduct(product);
+
+          // Verificar se pode adicionar mais
           if (existingItem.quantity >= product.stock) {
-            console.warn(`Estoque insuficiente: ${product.name}`);
-            return; // Não adiciona se atingiu estoque máximo
+            console.warn(`Estoque máximo atingido: ${product.name}`);
+            return;
           }
 
           // Aumenta quantidade
@@ -54,12 +92,6 @@ export const useCartStore = create<CartState>()(
           });
         } else {
           // Produto novo no carrinho
-          if (product.stock <= 0) {
-            console.warn(`Produto fora de estoque: ${product.name}`);
-            return; // Não adiciona se estoque zerado
-          }
-
-          // Adiciona item com dados essenciais (otimizado)
           const newItem: CartItem = {
             id: product.id,
             name: product.name,
@@ -90,7 +122,6 @@ export const useCartStore = create<CartState>()(
         const items = get().items;
         const item = items.find((i) => i.id === productId);
 
-        // Item não existe no carrinho
         if (!item) return;
 
         // Quantidade zero ou negativa = remover
@@ -102,13 +133,57 @@ export const useCartStore = create<CartState>()(
         // Validar estoque máximo
         if (quantity > item.stock) {
           console.warn(`Quantidade máxima: ${item.stock}`);
-          return; // Não permite mais que o estoque
+          return;
         }
 
         // Atualiza quantidade
         set({
           items: items.map((i) =>
             i.id === productId ? { ...i, quantity } : i,
+          ),
+        });
+      },
+
+      // ========================================
+      // ➕ INCREMENTAR QUANTIDADE
+      // ========================================
+      incrementQuantity: (productId, maxStock) => {
+        const items = get().items;
+        const item = items.find((i) => i.id === productId);
+
+        if (!item) return;
+
+        if (item.quantity >= maxStock) {
+          console.warn(`Quantidade máxima: ${maxStock}`);
+          return;
+        }
+
+        set({
+          items: items.map((i) =>
+            i.id === productId
+              ? { ...i, quantity: i.quantity + 1, stock: maxStock }
+              : i,
+          ),
+        });
+      },
+
+      // ========================================
+      // ➖ DECREMENTAR QUANTIDADE
+      // ========================================
+      decrementQuantity: (productId) => {
+        const items = get().items;
+        const item = items.find((i) => i.id === productId);
+
+        if (!item) return;
+
+        if (item.quantity <= 1) {
+          // Se for o último, perguntar se remove
+          return;
+        }
+
+        set({
+          items: items.map((i) =>
+            i.id === productId ? { ...i, quantity: i.quantity - 1 } : i,
           ),
         });
       },
@@ -125,7 +200,6 @@ export const useCartStore = create<CartState>()(
       // ========================================
       getTotalPrice: () => {
         return get().items.reduce((total, item) => {
-          // Usa preço promocional se existir, senão usa preço normal
           const price = item.salePrice ?? item.price;
           return total + price * item.quantity;
         }, 0);
@@ -154,8 +228,8 @@ export const useCartStore = create<CartState>()(
       },
     }),
     {
-      name: "cart-storage", // Nome no localStorage
-      version: 2, // ✅ ATUALIZADO: Versão 2 (nova estrutura)
+      name: "cart-storage",
+      version: 3, // ✅ VERSÃO 3: Sincronização automática
     },
   ),
 );
