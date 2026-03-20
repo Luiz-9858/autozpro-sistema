@@ -1,11 +1,13 @@
 import { useEffect, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useSearchParams, useNavigate } from "react-router-dom";
 import { productService, categoryService } from "../services/api";
 import type { Product, PaginationData, Category } from "../services/api";
 import ProductCard from "../components/layout/ProductCard";
 
 export default function Products() {
   const [searchParams] = useSearchParams();
+  const navigate = useNavigate();
+
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [pagination, setPagination] = useState<PaginationData>({
@@ -23,6 +25,9 @@ export default function Products() {
   const categoryId = searchParams.get("categoryId") || undefined;
   const searchTerm = searchParams.get("search") || undefined;
   const currentPage = parseInt(searchParams.get("page") || "1");
+  const sortBy = searchParams.get("sort") || "recent";
+  const onlyPromo = searchParams.get("promo") === "true";
+  const onlyStock = searchParams.get("stock") === "true";
 
   // 🔄 Função para buscar categorias
   const fetchCategories = async () => {
@@ -50,7 +55,46 @@ export default function Products() {
       );
 
       if (response.success && response.data) {
-        setProducts(response.data.products);
+        let filteredProducts = response.data.products;
+
+        // Filtro: Apenas promoções
+        if (onlyPromo) {
+          filteredProducts = filteredProducts.filter(
+            (p) => p.salePrice !== null,
+          );
+        }
+
+        // Filtro: Apenas em estoque
+        if (onlyStock) {
+          filteredProducts = filteredProducts.filter((p) => p.stock > 0);
+        }
+
+        // Ordenação
+        switch (sortBy) {
+          case "price-asc":
+            filteredProducts.sort((a, b) => {
+              const priceA = a.salePrice || a.price;
+              const priceB = b.salePrice || b.price;
+              return priceA - priceB;
+            });
+            break;
+          case "price-desc":
+            filteredProducts.sort((a, b) => {
+              const priceA = a.salePrice || a.price;
+              const priceB = b.salePrice || b.price;
+              return priceB - priceA;
+            });
+            break;
+          case "name-asc":
+            filteredProducts.sort((a, b) => a.name.localeCompare(b.name));
+            break;
+          case "recent":
+          default:
+            // Já vem ordenado por createdAt DESC do backend
+            break;
+        }
+
+        setProducts(filteredProducts);
         setPagination(response.data.pagination);
       }
     } catch (err) {
@@ -70,17 +114,29 @@ export default function Products() {
   useEffect(() => {
     fetchProducts(currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, categoryId, searchTerm]);
+  }, [currentPage, categoryId, searchTerm, sortBy, onlyPromo, onlyStock]);
+
+  // Atualizar URL com filtros
+  const updateFilters = (updates: Record<string, string | null>) => {
+    const params = new URLSearchParams(searchParams);
+
+    Object.entries(updates).forEach(([key, value]) => {
+      if (value) {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
+    });
+
+    // Resetar para página 1 ao mudar filtros
+    params.set("page", "1");
+
+    navigate(`?${params.toString()}`);
+  };
 
   const goToPage = (page: number) => {
     if (page >= 1 && page <= pagination.totalPages) {
-      const params = new URLSearchParams();
-      params.set("page", page.toString());
-      if (categoryId) params.set("categoryId", categoryId);
-      if (searchTerm) params.set("search", searchTerm);
-
-      window.history.pushState({}, "", `?${params.toString()}`);
-      fetchProducts(page);
+      updateFilters({ page: page.toString() });
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -91,16 +147,17 @@ export default function Products() {
     return category?.name;
   };
 
-  const handleAddToCart = (product: Product) => {
-    // TODO: Implementar lógica de adicionar ao carrinho
-    console.log("Adicionar ao carrinho:", product);
-    alert(`${product.name} adicionado ao carrinho!`);
+  const clearFilters = () => {
+    navigate("/products");
   };
+
+  const hasActiveFilters =
+    categoryId || searchTerm || onlyPromo || onlyStock || sortBy !== "recent";
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header com filtros ativos */}
+        {/* Header */}
         <div className="mb-8">
           <h1 className="text-3xl font-bold text-gray-900 mb-2">
             {getCategoryName() || "Catálogo de Produtos"}
@@ -113,13 +170,107 @@ export default function Products() {
           )}
 
           <p className="text-gray-600">
-            Exibindo {products.length} de {pagination.totalProducts} produtos
-            {pagination.totalPages > 1 && (
-              <span className="ml-2 text-sm">
-                (Página {pagination.currentPage} de {pagination.totalPages})
-              </span>
-            )}
+            {products.length}{" "}
+            {products.length === 1
+              ? "produto encontrado"
+              : "produtos encontrados"}
           </p>
+        </div>
+
+        {/* Filtros e Ordenação */}
+        <div className="mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
+          <div className="flex flex-wrap gap-4 items-center">
+            {/* Ordenação */}
+            <div className="flex items-center gap-2">
+              <label
+                htmlFor="sort"
+                className="text-sm font-medium text-gray-700"
+              >
+                Ordenar por:
+              </label>
+              <select
+                id="sort"
+                value={sortBy}
+                onChange={(e) => updateFilters({ sort: e.target.value })}
+                className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="recent">Mais recentes</option>
+                <option value="price-asc">Menor preço</option>
+                <option value="price-desc">Maior preço</option>
+                <option value="name-asc">Nome (A-Z)</option>
+              </select>
+            </div>
+
+            {/* Filtro: Categoria */}
+            {categories.length > 0 && (
+              <div className="flex items-center gap-2">
+                <label
+                  htmlFor="category"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Categoria:
+                </label>
+                <select
+                  id="category"
+                  value={categoryId || ""}
+                  onChange={(e) =>
+                    updateFilters({ categoryId: e.target.value || null })
+                  }
+                  className="px-3 py-2 border border-gray-300 rounded-md text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+                >
+                  <option value="">Todas</option>
+                  {categories.map((cat) => (
+                    <option key={cat.id} value={cat.id}>
+                      {cat.name} ({cat.productCount})
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+
+            {/* Filtro: Apenas Promoções */}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={onlyPromo}
+                onChange={(e) =>
+                  updateFilters({ promo: e.target.checked ? "true" : null })
+                }
+                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+              />
+              <span className="text-sm text-gray-700">
+                <i className="fas fa-tag text-primary mr-1"></i>
+                Apenas Promoções
+              </span>
+            </label>
+
+            {/* Filtro: Apenas em Estoque */}
+            <label className="flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={onlyStock}
+                onChange={(e) =>
+                  updateFilters({ stock: e.target.checked ? "true" : null })
+                }
+                className="w-4 h-4 text-primary border-gray-300 rounded focus:ring-primary"
+              />
+              <span className="text-sm text-gray-700">
+                <i className="fas fa-check-circle text-green-600 mr-1"></i>
+                Apenas em Estoque
+              </span>
+            </label>
+
+            {/* Botão Limpar Filtros */}
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="ml-auto text-sm text-primary hover:text-red-700 font-medium"
+              >
+                <i className="fas fa-times mr-1"></i>
+                Limpar Filtros
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Estado de erro */}
@@ -131,29 +282,40 @@ export default function Products() {
 
         {/* Estado de carregamento */}
         {loading ? (
-          <div className="flex justify-center items-center h-64">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div key={i} className="bg-white rounded-lg p-4 animate-pulse">
+                <div className="bg-gray-200 h-56 rounded mb-4"></div>
+                <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                <div className="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
+                <div className="h-10 bg-gray-200 rounded"></div>
+              </div>
+            ))}
           </div>
         ) : products.length === 0 ? (
-          <div className="text-center py-12">
+          <div className="text-center py-12 bg-white rounded-lg">
             <i className="fas fa-box-open text-6xl text-gray-300 mb-4"></i>
             <h3 className="text-xl font-semibold text-gray-700 mb-2">
               Nenhum produto encontrado
             </h3>
-            <p className="text-gray-500">
+            <p className="text-gray-500 mb-4">
               Tente ajustar os filtros ou fazer uma nova busca
             </p>
+            {hasActiveFilters && (
+              <button
+                onClick={clearFilters}
+                className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-red-700 transition"
+              >
+                Limpar Filtros
+              </button>
+            )}
           </div>
         ) : (
           <>
-            {/* Grid de produtos com novo card */}
+            {/* Grid de produtos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
               {products.map((product) => (
-                <ProductCard
-                  key={product.id}
-                  product={product}
-                  onAddToCart={handleAddToCart}
-                />
+                <ProductCard key={product.id} product={product} />
               ))}
             </div>
 
@@ -215,15 +377,6 @@ export default function Products() {
                 </button>
               </div>
             )}
-
-            <div className="text-center text-sm text-gray-500 mt-4">
-              Mostrando {(pagination.currentPage - 1) * pagination.limit + 1} -{" "}
-              {Math.min(
-                pagination.currentPage * pagination.limit,
-                pagination.totalProducts,
-              )}{" "}
-              de {pagination.totalProducts} produtos
-            </div>
           </>
         )}
       </div>
