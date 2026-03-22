@@ -4,8 +4,9 @@ import dotenv from "dotenv";
 import authRoutes from "./routes/authRoutes";
 import productRoutes from "./routes/productRoutes";
 import categoryRoutes from "./routes/categoryRoutes";
-import adminRoutes from "./routes/adminRoutes"; // ✅ NOVO
-import uploadRoutes from "./routes/uploadRoutes"; // ✅ NOVO
+import adminRoutes from "./routes/adminRoutes";
+import uploadRoutes from "./routes/uploadRoutes";
+import bulkRoutes from "./routes/bulkRoutes"; // ✅ NOVO
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -38,11 +39,14 @@ app.use("/api/products", productRoutes);
 // Rotas de categorias
 app.use("/api/categories", categoryRoutes);
 
-// Rotas de admin ✅ NOVO
+// Rotas de admin
 app.use("/api/admin", adminRoutes);
 
-// Rotas de upload ✅ NOVO
+// Rotas de upload
 app.use("/api/upload", uploadRoutes);
+
+// Rotas de bulk (atualização em massa) ✅ NOVO
+app.use("/api/bulk", bulkRoutes);
 
 // ========================================
 // 🚀 INICIAR SERVIDOR
