@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Link } from "react-router-dom";
 import type { Product } from "../../services/api";
 import AddToCartButton from "../AddToCartButton";
 
@@ -20,45 +21,47 @@ export default function ProductCard({ product }: ProductCardProps) {
   return (
     <div className="bg-white rounded-lg shadow-sm hover:shadow-xl transition-all duration-300 overflow-hidden group border border-gray-200">
       {/* Imagem do Produto */}
-      <div className="relative h-56 bg-gray-50 overflow-hidden">
-        <img
-          src={
-            imageError || !product.imageUrl
-              ? "https://placehold.co/400x400/F3F4F6/9CA3AF?text=Sem+Imagem"
-              : product.imageUrl
-          }
-          alt={product.name}
-          onError={handleImageError}
-          className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
-        />
+      <Link to={`/products/${product.id}`}>
+        <div className="relative h-56 bg-gray-50 overflow-hidden">
+          <img
+            src={
+              imageError || !product.imageUrl
+                ? "https://placehold.co/400x400/F3F4F6/9CA3AF?text=Sem+Imagem"
+                : product.imageUrl
+            }
+            alt={product.name}
+            onError={handleImageError}
+            className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+          />
 
-        {/* Badges */}
-        <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
-          {/* Badge de Promoção */}
-          {product.salePrice && (
-            <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-lg">
-              -{discountPercentage}%
-            </span>
-          )}
+          {/* Badges */}
+          <div className="absolute top-2 left-2 right-2 flex justify-between items-start">
+            {/* Badge de Promoção */}
+            {product.salePrice && (
+              <span className="bg-primary text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-lg">
+                -{discountPercentage}%
+              </span>
+            )}
 
-          {/* Badge Sem Estoque */}
-          {product.stock === 0 && (
-            <span className="bg-gray-900 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-lg ml-auto">
-              SEM ESTOQUE
-            </span>
+            {/* Badge Sem Estoque */}
+            {product.stock === 0 && (
+              <span className="bg-gray-900 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-lg ml-auto">
+                SEM ESTOQUE
+              </span>
+            )}
+          </div>
+
+          {/* Badge de Frete Grátis (simulado) */}
+          {product.price > 299 && product.stock > 0 && (
+            <div className="absolute bottom-2 left-2">
+              <span className="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-lg flex items-center gap-1">
+                <i className="fas fa-truck text-xs"></i>
+                Frete grátis
+              </span>
+            </div>
           )}
         </div>
-
-        {/* Badge de Frete Grátis (simulado) */}
-        {product.price > 299 && product.stock > 0 && (
-          <div className="absolute bottom-2 left-2">
-            <span className="bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-md shadow-lg flex items-center gap-1">
-              <i className="fas fa-truck text-xs"></i>
-              Frete grátis
-            </span>
-          </div>
-        )}
-      </div>
+      </Link>
 
       {/* Informações do Produto */}
       <div className="p-4">
@@ -68,12 +71,14 @@ export default function ProductCard({ product }: ProductCardProps) {
         </p>
 
         {/* Nome do Produto */}
-        <h3
-          className="text-sm font-semibold text-gray-900 line-clamp-2 mb-3 h-10 leading-5"
-          title={product.name}
-        >
-          {product.name}
-        </h3>
+        <Link to={`/products/${product.id}`}>
+          <h3
+            className="text-sm font-semibold text-gray-900 line-clamp-2 mb-3 h-10 leading-5 hover:text-primary transition"
+            title={product.name}
+          >
+            {product.name}
+          </h3>
+        </Link>
 
         {/* Preços */}
         <div className="mb-3">
@@ -138,12 +143,12 @@ export default function ProductCard({ product }: ProductCardProps) {
 
         {/* Link Ver Detalhes */}
         {product.stock > 0 && (
-          <button
-            className="w-full mt-2 py-2 text-sm text-primary hover:text-red-700 font-medium transition-colors"
-            aria-label={`Ver detalhes de ${product.name}`}
+          <Link
+            to={`/products/${product.id}`}
+            className="block w-full mt-2 py-2 text-sm text-primary hover:text-red-700 font-medium transition-colors text-center"
           >
             Ver detalhes
-          </button>
+          </Link>
         )}
       </div>
     </div>
