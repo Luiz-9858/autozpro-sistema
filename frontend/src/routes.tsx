@@ -21,6 +21,7 @@ import AdminDashboard from "./pages/AdminDashboard";
 import AdminProducts from "./pages/AdminProducts";
 import AdminCategories from "./pages/AdminCategories";
 import ProductFormPage from "./pages/ProductFormPage";
+import AdminBulkImages from "./pages/AdminBulkImages";
 
 // ========================================
 // 🔒 COMPONENTE: ProtectedRoute
@@ -127,7 +128,7 @@ export default function AppRoutes() {
         }
       />
 
-      {/* 📄 ROTA DE DETALHES DO PRODUTO (NOVO) */}
+      {/* 📄 ROTA DE DETALHES DO PRODUTO */}
       <Route
         path="/products/:id"
         element={
@@ -174,6 +175,8 @@ export default function AppRoutes() {
         <Route path="products/new" element={<ProductFormPage />} />
         <Route path="products/edit/:id" element={<ProductFormPage />} />
         <Route path="categories" element={<AdminCategories />} />
+        {/* 📸 ROTA UPLOAD EM MASSA (NOVO) */}
+        <Route path="bulk-images" element={<AdminBulkImages />} />
       </Route>
     </Routes>
   );
