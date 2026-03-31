@@ -31,24 +31,38 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   // 🔐 LOGIN
   login: async (email: string, password: string) => {
+    console.log("🔐 [AUTH STORE] Iniciando login...");
+    console.log("   Email:", email);
+    console.log("   Senha:", password ? "****" : "vazia");
+
     set({ isLoading: true, error: null });
 
     try {
+      console.log("📡 [AUTH STORE] Chamando authService.login...");
+
       const response = await authService.login({ email, password });
 
-      console.log("📦 Resposta do login:", response);
+      console.log("📦 [AUTH STORE] Resposta recebida:");
+      console.log("   success:", response.success);
+      console.log("   message:", response.message);
+      console.log("   data:", response.data);
+      console.log("   token existe?", !!response.data?.token);
+      console.log("   user existe?", !!response.data?.user);
 
       // Verificar se a resposta tem a estrutura correta
       if (!response.data?.token || !response.data?.user) {
+        console.error("❌ [AUTH STORE] Estrutura de resposta inválida!");
         throw new Error("Resposta inválida do servidor");
       }
 
       // Salvar no localStorage
+      console.log("💾 [AUTH STORE] Salvando no localStorage...");
       localStorage.setItem("token", response.data.token);
       localStorage.setItem("user", JSON.stringify(response.data.user));
 
-      console.log("💾 Token salvo:", response.data.token);
-      console.log("👤 User salvo:", response.data.user);
+      console.log("✅ [AUTH STORE] Dados salvos!");
+      console.log("   Token:", response.data.token.substring(0, 20) + "...");
+      console.log("   User:", response.data.user);
 
       // Atualizar store
       set({
@@ -58,19 +72,26 @@ export const useAuthStore = create<AuthState>((set) => ({
         error: null,
       });
 
-      console.log("✅ Login realizado com sucesso!");
+      console.log("✅ [AUTH STORE] Login realizado com sucesso!");
     } catch (error) {
+      console.error("❌ [AUTH STORE] Erro no login:");
+
       let errorMessage = "Erro ao fazer login";
 
       if (axios.isAxiosError(error)) {
+        console.error("   Status:", error.response?.status);
+        console.error("   Data:", error.response?.data);
+        console.error("   Message:", error.message);
         errorMessage = error.response?.data?.message || error.message;
+      } else {
+        console.error("   Erro:", error);
       }
 
       set({
         isLoading: false,
         error: errorMessage,
       });
-      console.error("❌ Erro no login:", errorMessage);
+
       throw error;
     }
   },
