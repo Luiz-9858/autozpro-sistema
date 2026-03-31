@@ -239,4 +239,44 @@ export const adminService = {
   },
 };
 
+// ========================================
+// 📸 BULK SERVICES (NOVO)
+// ========================================
+
+export interface BulkImageUpdate {
+  sku: string;
+  imageUrl: string;
+}
+
+export interface BulkUpdateResult {
+  sku: string;
+  status: "success" | "error" | "not_found";
+  message: string;
+}
+
+export interface BulkUpdateResponse {
+  success: boolean;
+  summary: {
+    total: number;
+    success: number;
+    notFound: number;
+    errors: number;
+  };
+  results: BulkUpdateResult[];
+}
+
+export const bulkService = {
+  updateImages: async (
+    updates: BulkImageUpdate[],
+  ): Promise<BulkUpdateResponse> => {
+    const response = await api.post("/api/bulk/images", { updates });
+    return response.data;
+  },
+
+  getProductsWithoutImages: async () => {
+    const response = await api.get("/api/bulk/products-without-images");
+    return response.data;
+  },
+};
+
 export default api;
