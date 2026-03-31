@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
-import api from "../services/api";
+import { bulkService } from "../services/api";
 
 /**
  * 📸 PÁGINA: Upload em Massa de Imagens
@@ -53,7 +53,7 @@ SUSPENSAO-003,https://exemplo.com/imagem3.jpg`;
   // Baixar produtos sem imagem
   const downloadProductsWithoutImages = async () => {
     try {
-      const response = await api.get("/bulk/products-without-images");
+      const response = await bulkService.getProductsWithoutImages();
 
       if (response.data.success) {
         const products = response.data.data;
@@ -128,14 +128,14 @@ SUSPENSAO-003,https://exemplo.com/imagem3.jpg`;
       }
 
       // Enviar para backend
-      const response = await api.post("/bulk/images", { updates });
+      const response = await bulkService.updateImages(updates);
 
-      if (response.data.success) {
-        setResults(response.data.results);
-        setSummary(response.data.summary);
+      if (response.success) {
+        setResults(response.results);
+        setSummary(response.summary);
 
         toast.success(
-          `${response.data.summary.success} imagens atualizadas com sucesso!`,
+          `${response.summary.success} imagens atualizadas com sucesso!`,
         );
       }
     } catch (error) {
