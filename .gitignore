@@ -33,3 +33,6 @@ logs/
 # Prisma
 prisma/migrations/*_migration.sql
 /generated/prisma
+
+# Scripts de teste/debug
+backend/src/scripts/
