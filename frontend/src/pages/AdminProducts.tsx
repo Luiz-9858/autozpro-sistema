@@ -95,6 +95,13 @@ export default function AdminProducts() {
           <i className="fas fa-plus"></i>
           Novo Produto
         </Link>
+        <Link
+          to="/admin/bulk-images"
+          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
+        >
+          <i className="fas fa-images mr-2"></i>
+          Upload em Massa
+        </Link>
       </div>
 
       {/* Busca */}
