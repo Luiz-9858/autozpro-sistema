@@ -59,17 +59,17 @@ export default function ProductDetail() {
   // Loading
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 py-8">
+      <div className="min-h-screen bg-gray-50 py-4 md:py-8">
         <div className="max-w-7xl mx-auto px-4">
           <div className="animate-pulse">
-            <div className="h-8 bg-gray-200 rounded w-1/3 mb-8"></div>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-gray-200 h-96 rounded-lg"></div>
+            <div className="h-6 md:h-8 bg-gray-200 rounded w-1/2 md:w-1/3 mb-4 md:mb-8"></div>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8">
+              <div className="bg-gray-200 h-64 md:h-96 rounded-lg"></div>
               <div className="space-y-4">
-                <div className="h-8 bg-gray-200 rounded w-3/4"></div>
+                <div className="h-6 md:h-8 bg-gray-200 rounded w-3/4"></div>
                 <div className="h-4 bg-gray-200 rounded w-1/4"></div>
-                <div className="h-12 bg-gray-200 rounded w-1/2"></div>
-                <div className="h-32 bg-gray-200 rounded"></div>
+                <div className="h-10 md:h-12 bg-gray-200 rounded w-1/2"></div>
+                <div className="h-24 md:h-32 bg-gray-200 rounded"></div>
               </div>
             </div>
           </div>
@@ -81,18 +81,18 @@ export default function ProductDetail() {
   // Erro ou produto não encontrado
   if (error || !product) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-gray-50 py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4 text-center">
-          <i className="fas fa-exclamation-circle text-6xl text-red-500 mb-4"></i>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <i className="fas fa-exclamation-circle text-4xl md:text-6xl text-red-500 mb-4"></i>
+          <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
             {error || "Produto não encontrado"}
           </h1>
-          <p className="text-gray-600 mb-6">
+          <p className="text-sm md:text-base text-gray-600 mb-6">
             O produto que você procura não existe ou foi removido.
           </p>
           <button
             onClick={() => navigate("/products")}
-            className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-red-700 transition"
+            className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-red-700 transition text-sm md:text-base"
           >
             <i className="fas fa-arrow-left mr-2"></i>
             Voltar para o Catálogo
@@ -109,28 +109,43 @@ export default function ProductDetail() {
   const finalPrice = product.salePrice || product.price;
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8">
       <div className="max-w-7xl mx-auto px-4">
-        {/* Breadcrumb */}
-        <nav className="mb-6 text-sm" aria-label="Breadcrumb">
-          <ol className="flex items-center gap-2 text-gray-600">
-            <li>
+        {/* Breadcrumb - Simplificado no Mobile */}
+        <nav
+          className="mb-4 md:mb-6 text-xs md:text-sm"
+          aria-label="Breadcrumb"
+        >
+          <ol className="flex items-center gap-2 text-gray-600 overflow-x-auto pb-2">
+            {/* Mobile: Apenas voltar */}
+            <li className="lg:hidden">
+              <button
+                onClick={() => navigate(-1)}
+                className="flex items-center gap-1 hover:text-primary"
+              >
+                <i className="fas fa-arrow-left"></i>
+                <span>Voltar</span>
+              </button>
+            </li>
+
+            {/* Desktop: Breadcrumb completo */}
+            <li className="hidden lg:block">
               <Link to="/" className="hover:text-primary">
                 Home
               </Link>
             </li>
-            <li>
+            <li className="hidden lg:block">
               <i className="fas fa-chevron-right text-xs"></i>
             </li>
-            <li>
+            <li className="hidden lg:block">
               <Link to="/products" className="hover:text-primary">
                 Produtos
               </Link>
             </li>
-            <li>
+            <li className="hidden lg:block">
               <i className="fas fa-chevron-right text-xs"></i>
             </li>
-            <li>
+            <li className="hidden lg:block">
               <Link
                 to={`/products?categoryId=${product.category.id}`}
                 className="hover:text-primary"
@@ -138,19 +153,19 @@ export default function ProductDetail() {
                 {product.category.name}
               </Link>
             </li>
-            <li>
+            <li className="hidden lg:block">
               <i className="fas fa-chevron-right text-xs"></i>
             </li>
-            <li className="text-gray-900 font-medium truncate max-w-xs">
+            <li className="hidden lg:block text-gray-900 font-medium truncate max-w-xs">
               {product.name}
             </li>
           </ol>
         </nav>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 bg-white rounded-lg shadow-sm p-6">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 md:gap-8 bg-white rounded-lg shadow-sm p-4 md:p-6">
           {/* COLUNA ESQUERDA: Imagem */}
           <div>
-            <div className="relative bg-gray-50 rounded-lg overflow-hidden mb-4">
+            <div className="relative bg-gray-50 rounded-lg overflow-hidden mb-3 md:mb-4">
               <img
                 src={
                   imageError || !product.imageUrl
@@ -159,21 +174,21 @@ export default function ProductDetail() {
                 }
                 alt={product.name}
                 onError={handleImageError}
-                className="w-full h-auto object-contain max-h-[500px]"
+                className="w-full h-auto object-contain max-h-[300px] md:max-h-[400px] lg:max-h-[500px]"
               />
 
               {/* Badges */}
               {product.salePrice && (
-                <div className="absolute top-4 left-4">
-                  <span className="bg-primary text-white text-sm font-bold px-3 py-1.5 rounded-md shadow-lg">
+                <div className="absolute top-2 md:top-4 left-2 md:left-4">
+                  <span className="bg-primary text-white text-xs md:text-sm font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-md shadow-lg">
                     -{discountPercentage}% OFF
                   </span>
                 </div>
               )}
 
               {product.stock === 0 && (
-                <div className="absolute top-4 right-4">
-                  <span className="bg-gray-900 text-white text-sm font-bold px-3 py-1.5 rounded-md shadow-lg">
+                <div className="absolute top-2 md:top-4 right-2 md:right-4">
+                  <span className="bg-gray-900 text-white text-xs md:text-sm font-bold px-2 md:px-3 py-1 md:py-1.5 rounded-md shadow-lg">
                     ESGOTADO
                   </span>
                 </div>
@@ -181,33 +196,33 @@ export default function ProductDetail() {
             </div>
 
             {/* Compartilhar */}
-            <div className="flex items-center gap-3 p-4 bg-gray-50 rounded-lg">
-              <span className="text-sm font-medium text-gray-700">
+            <div className="flex items-center gap-2 md:gap-3 p-3 md:p-4 bg-gray-50 rounded-lg">
+              <span className="text-xs md:text-sm font-medium text-gray-700">
                 Compartilhar:
               </span>
               <button
                 className="text-gray-600 hover:text-blue-600 transition"
                 aria-label="Compartilhar no Facebook"
               >
-                <i className="fab fa-facebook text-xl"></i>
+                <i className="fab fa-facebook text-lg md:text-xl"></i>
               </button>
               <button
                 className="text-gray-600 hover:text-blue-400 transition"
                 aria-label="Compartilhar no Twitter"
               >
-                <i className="fab fa-twitter text-xl"></i>
+                <i className="fab fa-twitter text-lg md:text-xl"></i>
               </button>
               <button
                 className="text-gray-600 hover:text-green-600 transition"
                 aria-label="Compartilhar no WhatsApp"
               >
-                <i className="fab fa-whatsapp text-xl"></i>
+                <i className="fab fa-whatsapp text-lg md:text-xl"></i>
               </button>
               <button
                 className="text-gray-600 hover:text-gray-900 transition"
                 aria-label="Copiar link"
               >
-                <i className="fas fa-link text-xl"></i>
+                <i className="fas fa-link text-lg md:text-xl"></i>
               </button>
             </div>
           </div>
@@ -223,40 +238,40 @@ export default function ProductDetail() {
             </Link>
 
             {/* Nome */}
-            <h1 className="text-3xl font-bold text-gray-900 mb-4">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-3 md:mb-4">
               {product.name}
             </h1>
 
             {/* SKU */}
-            <p className="text-sm text-gray-600 mb-6">
+            <p className="text-xs md:text-sm text-gray-600 mb-4 md:mb-6">
               <strong>SKU:</strong> {product.sku}
             </p>
 
             {/* Preço */}
-            <div className="mb-6">
+            <div className="mb-4 md:mb-6">
               {product.salePrice ? (
                 <>
-                  <p className="text-lg text-gray-500 line-through mb-1">
+                  <p className="text-base md:text-lg text-gray-500 line-through mb-1">
                     De: R$ {product.price.toFixed(2)}
                   </p>
-                  <p className="text-4xl font-bold text-primary mb-2">
+                  <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary mb-2">
                     Por: R$ {product.salePrice.toFixed(2)}
                   </p>
-                  <p className="text-sm text-green-600 font-semibold">
+                  <p className="text-xs md:text-sm text-green-600 font-semibold">
                     Economize R${" "}
                     {(product.price - product.salePrice).toFixed(2)} (
                     {discountPercentage}%)
                   </p>
                 </>
               ) : (
-                <p className="text-4xl font-bold text-gray-900">
+                <p className="text-2xl md:text-3xl lg:text-4xl font-bold text-gray-900">
                   R$ {product.price.toFixed(2)}
                 </p>
               )}
 
               {/* Parcelamento */}
               {product.stock > 0 && (
-                <p className="text-sm text-gray-600 mt-3">
+                <p className="text-xs md:text-sm text-gray-600 mt-2 md:mt-3">
                   ou em até{" "}
                   <strong className="text-gray-900">
                     10x de R$ {(finalPrice / 10).toFixed(2)}
@@ -267,11 +282,11 @@ export default function ProductDetail() {
             </div>
 
             {/* Estoque */}
-            <div className="mb-6 p-4 bg-gray-50 rounded-lg">
+            <div className="mb-4 md:mb-6 p-3 md:p-4 bg-gray-50 rounded-lg">
               {product.stock > 0 ? (
                 <div className="flex items-center gap-2 text-green-700">
-                  <i className="fas fa-check-circle text-xl"></i>
-                  <span className="font-semibold">
+                  <i className="fas fa-check-circle text-lg md:text-xl"></i>
+                  <span className="text-sm md:text-base font-semibold">
                     {product.stock}{" "}
                     {product.stock === 1
                       ? "unidade disponível"
@@ -280,16 +295,18 @@ export default function ProductDetail() {
                 </div>
               ) : (
                 <div className="flex items-center gap-2 text-red-600">
-                  <i className="fas fa-times-circle text-xl"></i>
-                  <span className="font-semibold">Produto esgotado</span>
+                  <i className="fas fa-times-circle text-lg md:text-xl"></i>
+                  <span className="text-sm md:text-base font-semibold">
+                    Produto esgotado
+                  </span>
                 </div>
               )}
 
               {/* Frete Grátis */}
               {finalPrice >= 299 && product.stock > 0 && (
                 <div className="flex items-center gap-2 text-green-600 mt-3 pt-3 border-t">
-                  <i className="fas fa-truck text-xl"></i>
-                  <span className="font-semibold">
+                  <i className="fas fa-truck text-lg md:text-xl"></i>
+                  <span className="text-sm md:text-base font-semibold">
                     Frete Grátis para todo Brasil
                   </span>
                 </div>
@@ -298,22 +315,22 @@ export default function ProductDetail() {
 
             {/* Seletor de Quantidade */}
             {product.stock > 0 && (
-              <div className="mb-6">
+              <div className="mb-4 md:mb-6">
                 <label
                   htmlFor="quantity-input"
                   className="block text-sm font-medium text-gray-700 mb-2"
                 >
                   Quantidade:
                 </label>
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-2 md:gap-3">
                   <div className="flex items-center border border-gray-300 rounded-lg">
                     <button
                       onClick={decrementQuantity}
                       disabled={quantity <= 1}
-                      className="px-4 py-2 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 md:px-4 py-2 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Diminuir quantidade"
                     >
-                      <i className="fas fa-minus"></i>
+                      <i className="fas fa-minus text-sm"></i>
                     </button>
                     <input
                       id="quantity-input"
@@ -329,26 +346,26 @@ export default function ProductDetail() {
                       max={product.stock}
                       aria-label="Quantidade do produto"
                       title="Quantidade"
-                      className="w-16 text-center border-x border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-primary"
+                      className="w-12 md:w-16 text-center border-x border-gray-300 py-2 focus:outline-none focus:ring-2 focus:ring-primary text-sm md:text-base"
                     />
                     <button
                       onClick={incrementQuantity}
                       disabled={quantity >= product.stock}
-                      className="px-4 py-2 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-3 md:px-4 py-2 hover:bg-gray-100 transition disabled:opacity-50 disabled:cursor-not-allowed"
                       aria-label="Aumentar quantidade"
                     >
-                      <i className="fas fa-plus"></i>
+                      <i className="fas fa-plus text-sm"></i>
                     </button>
                   </div>
-                  <span className="text-sm text-gray-600">
-                    (máximo: {product.stock})
+                  <span className="text-xs md:text-sm text-gray-600">
+                    (máx: {product.stock})
                   </span>
                 </div>
               </div>
             )}
 
             {/* Botão Adicionar ao Carrinho */}
-            <div className="mb-6">
+            <div className="mb-4 md:mb-6">
               <AddToCartButton
                 product={product}
                 variant="primary"
@@ -359,22 +376,22 @@ export default function ProductDetail() {
 
             {/* Descrição */}
             {product.description && (
-              <div className="mb-6">
-                <h2 className="text-xl font-bold text-gray-900 mb-3">
+              <div className="mb-4 md:mb-6">
+                <h2 className="text-lg md:text-xl font-bold text-gray-900 mb-2 md:mb-3">
                   Descrição do Produto
                 </h2>
-                <p className="text-gray-700 leading-relaxed whitespace-pre-line">
+                <p className="text-sm md:text-base text-gray-700 leading-relaxed whitespace-pre-line">
                   {product.description}
                 </p>
               </div>
             )}
 
             {/* Informações Extras */}
-            <div className="border-t pt-6">
-              <h3 className="text-lg font-bold text-gray-900 mb-4">
+            <div className="border-t pt-4 md:pt-6">
+              <h3 className="text-base md:text-lg font-bold text-gray-900 mb-3 md:mb-4">
                 Informações do Produto
               </h3>
-              <div className="space-y-3 text-sm">
+              <div className="space-y-2 md:space-y-3 text-xs md:text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Categoria:</span>
                   <span className="font-semibold text-gray-900">
@@ -401,18 +418,18 @@ export default function ProductDetail() {
             </div>
 
             {/* Selos de Confiança */}
-            <div className="mt-8 pt-6 border-t">
-              <div className="grid grid-cols-3 gap-4 text-center">
+            <div className="mt-6 md:mt-8 pt-4 md:pt-6 border-t">
+              <div className="grid grid-cols-3 gap-3 md:gap-4 text-center">
                 <div>
-                  <i className="fas fa-shield-alt text-3xl text-primary mb-2"></i>
+                  <i className="fas fa-shield-alt text-2xl md:text-3xl text-primary mb-1 md:mb-2"></i>
                   <p className="text-xs text-gray-600">Compra Segura</p>
                 </div>
                 <div>
-                  <i className="fas fa-undo text-3xl text-primary mb-2"></i>
+                  <i className="fas fa-undo text-2xl md:text-3xl text-primary mb-1 md:mb-2"></i>
                   <p className="text-xs text-gray-600">7 Dias para Troca</p>
                 </div>
                 <div>
-                  <i className="fas fa-truck text-3xl text-primary mb-2"></i>
+                  <i className="fas fa-truck text-2xl md:text-3xl text-primary mb-1 md:mb-2"></i>
                   <p className="text-xs text-gray-600">Entrega Rápida</p>
                 </div>
               </div>
