@@ -29,19 +29,19 @@ export default function Cart() {
   // Carrinho vazio
   if (items.length === 0) {
     return (
-      <div className="min-h-screen bg-gray-50 py-12">
+      <div className="min-h-screen bg-gray-50 py-8 md:py-12">
         <div className="max-w-7xl mx-auto px-4">
-          <div className="bg-white rounded-lg shadow-sm p-12 text-center">
-            <div className="text-6xl mb-4">🛒</div>
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <div className="bg-white rounded-lg shadow-sm p-8 md:p-12 text-center">
+            <div className="text-4xl md:text-6xl mb-4">🛒</div>
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900 mb-2">
               Seu carrinho está vazio
             </h1>
-            <p className="text-gray-600 mb-8">
+            <p className="text-sm md:text-base text-gray-600 mb-6 md:mb-8">
               Adicione produtos ao carrinho para continuar comprando
             </p>
             <Link
               to="/products"
-              className="inline-block bg-primary text-white px-8 py-3 rounded-lg hover:bg-red-700 transition font-semibold"
+              className="inline-block bg-primary text-white px-6 md:px-8 py-3 rounded-lg hover:bg-red-700 transition font-semibold text-sm md:text-base"
             >
               <i className="fas fa-arrow-left mr-2"></i>
               Continuar Comprando
@@ -53,47 +53,47 @@ export default function Cart() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
+    <div className="min-h-screen bg-gray-50 py-4 md:py-8 pb-32 lg:pb-8">
       <div className="max-w-7xl mx-auto px-4">
         {/* Header */}
-        <div className="flex items-center justify-between mb-8">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6 md:mb-8">
           <div>
-            <h1 className="text-3xl font-bold text-gray-900">
+            <h1 className="text-xl md:text-2xl lg:text-3xl font-bold text-gray-900">
               Carrinho de Compras
             </h1>
-            <p className="text-gray-600 mt-1">
+            <p className="text-sm md:text-base text-gray-600 mt-1">
               {totalItems} {totalItems === 1 ? "item" : "itens"} no carrinho
             </p>
           </div>
 
           <Link
             to="/products"
-            className="text-primary hover:text-red-700 font-semibold"
+            className="text-primary hover:text-red-700 font-semibold text-sm md:text-base inline-flex items-center"
           >
             <i className="fas fa-arrow-left mr-2"></i>
             Continuar Comprando
           </Link>
         </div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 md:gap-8">
           {/* Lista de itens */}
-          <div className="lg:col-span-2 space-y-4">
+          <div className="lg:col-span-2 space-y-3 md:space-y-4">
             {items.map((item) => (
               <CartItem key={item.id} item={item} />
             ))}
 
-            {/* Botão limpar carrinho */}
+            {/* Botão limpar carrinho - APENAS DESKTOP */}
             <button
               onClick={handleClearCart}
-              className="w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-300 transition font-semibold"
+              className="hidden lg:flex w-full bg-gray-200 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-300 transition font-semibold justify-center items-center"
             >
               <i className="fas fa-trash mr-2"></i>
               Limpar Carrinho
             </button>
           </div>
 
-          {/* Resumo do pedido */}
-          <div className="lg:col-span-1">
+          {/* Resumo do pedido - DESKTOP (Sticky Sidebar) */}
+          <div className="hidden lg:block lg:col-span-1">
             <div className="bg-white rounded-lg shadow-sm p-6 sticky top-24">
               <h2 className="text-xl font-bold text-gray-900 mb-4">
                 Resumo do Pedido
@@ -158,6 +158,56 @@ export default function Cart() {
                 </div>
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Resumo Fixo Mobile - APENAS MOBILE/TABLET */}
+      <div className="lg:hidden fixed bottom-0 left-0 right-0 bg-white border-t border-gray-200 shadow-lg z-40">
+        <div className="max-w-7xl mx-auto px-4 py-4">
+          {/* Resumo Compacto */}
+          <div className="flex items-center justify-between mb-3">
+            <div>
+              <p className="text-xs text-gray-600">
+                {totalItems} {totalItems === 1 ? "item" : "itens"}
+              </p>
+              <p className="text-lg font-bold text-gray-900">
+                R$ {totalPrice.toFixed(2)}
+              </p>
+            </div>
+
+            {/* Frete Badge */}
+            <div className="text-xs">
+              {totalPrice >= 299 ? (
+                <span className="bg-green-100 text-green-700 px-2 py-1 rounded font-semibold">
+                  <i className="fas fa-truck mr-1"></i>
+                  Frete Grátis
+                </span>
+              ) : (
+                <span className="text-gray-600">
+                  Falta R$ {(299 - totalPrice).toFixed(2)} p/ frete grátis
+                </span>
+              )}
+            </div>
+          </div>
+
+          {/* Botões */}
+          <div className="flex gap-2">
+            <button
+              onClick={handleClearCart}
+              className="flex-shrink-0 bg-gray-200 text-gray-700 px-4 py-3 rounded-lg hover:bg-gray-300 transition"
+              aria-label="Limpar carrinho"
+            >
+              <i className="fas fa-trash"></i>
+            </button>
+
+            <button
+              className="flex-1 bg-primary text-white px-6 py-3 rounded-lg hover:bg-red-700 transition font-bold shadow-lg"
+              aria-label="Finalizar compra"
+            >
+              <i className="fas fa-check-circle mr-2"></i>
+              Finalizar Compra
+            </button>
           </div>
         </div>
       </div>
