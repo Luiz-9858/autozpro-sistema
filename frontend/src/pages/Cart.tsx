@@ -202,11 +202,11 @@ export default function Cart() {
             </button>
 
             <button
-              className="flex-1 bg-primary text-white px-6 py-3 rounded-lg hover:bg-red-700 transition font-bold shadow-lg"
+              className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-red-700 transition font-bold shadow-lg text-sm"
               aria-label="Finalizar compra"
             >
-              <i className="fas fa-check-circle mr-2"></i>
-              Finalizar Compra
+              <i className="fas fa-check-circle mr-1"></i>
+              Finalizar
             </button>
           </div>
         </div>
