@@ -81,27 +81,33 @@ export default function AdminProducts() {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6">
       {/* Header */}
-      <div className="flex justify-between items-center">
+      <div className="flex flex-col gap-3 md:flex-row md:justify-between md:items-center">
         <div>
-          <h2 className="text-3xl font-bold text-gray-900">Produtos</h2>
-          <p className="text-gray-600 mt-1">Gerencie o catálogo de produtos</p>
+          <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
+            Produtos
+          </h2>
+          <p className="text-sm md:text-base text-gray-600 mt-1">
+            Gerencie o catálogo de produtos
+          </p>
         </div>
-        <Link
-          to="/admin/products/new"
-          className="bg-primary text-white px-6 py-3 rounded-lg hover:bg-primary-dark transition flex items-center gap-2"
-        >
-          <i className="fas fa-plus"></i>
-          Novo Produto
-        </Link>
-        <Link
-          to="/admin/bulk-images"
-          className="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
-        >
-          <i className="fas fa-images mr-2"></i>
-          Upload em Massa
-        </Link>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Link
+            to="/admin/products/new"
+            className="bg-primary text-white px-4 md:px-6 py-2.5 md:py-3 rounded-lg hover:bg-primary-dark transition flex items-center justify-center gap-2 text-sm md:text-base font-semibold"
+          >
+            <i className="fas fa-plus"></i>
+            Novo Produto
+          </Link>
+          <Link
+            to="/admin/bulk-images"
+            className="bg-blue-600 text-white px-4 py-2.5 md:py-2 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center justify-center text-sm md:text-base"
+          >
+            <i className="fas fa-images mr-2"></i>
+            Upload em Massa
+          </Link>
+        </div>
       </div>
 
       {/* Busca */}
@@ -111,11 +117,11 @@ export default function AdminProducts() {
           value={searchTerm}
           onChange={(e) => setSearchTerm(e.target.value)}
           placeholder="Buscar produtos..."
-          className="flex-1 px-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+          className="flex-1 px-3 md:px-4 py-2 text-sm md:text-base border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
         />
         <button
           type="submit"
-          className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-primary-dark transition"
+          className="bg-primary text-white px-4 md:px-6 py-2 rounded-lg hover:bg-primary-dark transition"
           title="Buscar"
           aria-label="Buscar produtos"
         >
@@ -129,22 +135,22 @@ export default function AdminProducts() {
           <table className="min-w-full divide-y divide-gray-200">
             <thead className="bg-gray-50">
               <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Produto
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden sm:table-cell px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Categoria
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Preço
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden md:table-cell px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Estoque
                 </th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="hidden lg:table-cell px-3 md:px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Status
                 </th>
-                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                <th className="px-3 md:px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
                   Ações
                 </th>
               </tr>
@@ -158,18 +164,18 @@ export default function AdminProducts() {
                 : // ✅ DADOS REAIS
                   products.map((product) => (
                     <tr key={product.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
+                      <td className="px-3 md:px-6 py-3 md:py-4">
+                        <div className="flex items-center gap-2 md:gap-3">
                           <img
                             src={
                               product.imageUrl ||
                               "https://placehold.co/60x60/F3F4F6/9CA3AF?text=Sem+Img"
                             }
                             alt={product.name}
-                            className="w-12 h-12 rounded object-cover"
+                            className="w-10 h-10 md:w-12 md:h-12 rounded object-cover flex-shrink-0"
                           />
-                          <div>
-                            <p className="text-sm font-medium text-gray-900 line-clamp-1">
+                          <div className="min-w-0">
+                            <p className="text-xs md:text-sm font-medium text-gray-900 line-clamp-1">
                               {product.name}
                             </p>
                             <p className="text-xs text-gray-500">
@@ -178,30 +184,30 @@ export default function AdminProducts() {
                           </div>
                         </div>
                       </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
+                      <td className="hidden sm:table-cell px-3 md:px-6 py-3 md:py-4 text-xs md:text-sm text-gray-900">
                         {product.category.name}
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="px-3 md:px-6 py-3 md:py-4">
                         <div>
                           {product.salePrice ? (
                             <>
                               <p className="text-xs text-gray-500 line-through">
                                 R$ {product.price.toFixed(2)}
                               </p>
-                              <p className="text-sm font-semibold text-primary">
+                              <p className="text-xs md:text-sm font-semibold text-primary">
                                 R$ {product.salePrice.toFixed(2)}
                               </p>
                             </>
                           ) : (
-                            <p className="text-sm font-semibold text-gray-900">
+                            <p className="text-xs md:text-sm font-semibold text-gray-900">
                               R$ {product.price.toFixed(2)}
                             </p>
                           )}
                         </div>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="hidden md:table-cell px-3 md:px-6 py-3 md:py-4">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                          className={`inline-flex items-center px-2 md:px-2.5 py-0.5 rounded-full text-xs font-medium ${
                             product.stock === 0
                               ? "bg-red-100 text-red-800"
                               : product.stock < 5
@@ -209,40 +215,33 @@ export default function AdminProducts() {
                                 : "bg-green-100 text-green-800"
                           }`}
                         >
-                          {product.stock} unidades
+                          {product.stock} un.
                         </span>
                       </td>
-                      <td className="px-6 py-4">
+                      <td className="hidden lg:table-cell px-3 md:px-6 py-3 md:py-4">
                         <button
                           onClick={() => handleToggleActive(product)}
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium transition ${
+                          className={`inline-flex items-center px-2 md:px-3 py-1 rounded-full text-xs font-medium transition ${
                             product.isActive
                               ? "bg-green-100 text-green-800 hover:bg-green-200"
                               : "bg-gray-100 text-gray-800 hover:bg-gray-200"
                           }`}
                         >
-                          {product.isActive ? (
-                            <>
-                              <i className="fas fa-check-circle mr-1"></i>
-                              Ativo
-                            </>
-                          ) : (
-                            <>
-                              <i className="fas fa-times-circle mr-1"></i>
-                              Inativo
-                            </>
-                          )}
+                          <i
+                            className={`fas ${product.isActive ? "fa-check-circle" : "fa-times-circle"} mr-1`}
+                          ></i>
+                          {product.isActive ? "Ativo" : "Inativo"}
                         </button>
                       </td>
-                      <td className="px-6 py-4 text-right text-sm font-medium">
-                        <div className="flex justify-end gap-2">
+                      <td className="px-3 md:px-6 py-3 md:py-4 text-right text-sm font-medium">
+                        <div className="flex justify-end gap-2 md:gap-3">
                           <Link
                             to={`/admin/products/edit/${product.id}`}
                             className="text-blue-600 hover:text-blue-900"
                             title="Editar"
                             aria-label="Editar produto"
                           >
-                            <i className="fas fa-edit"></i>
+                            <i className="fas fa-edit text-base md:text-lg"></i>
                           </Link>
                           <button
                             onClick={() =>
@@ -252,7 +251,7 @@ export default function AdminProducts() {
                             title="Deletar"
                             aria-label="Deletar produto"
                           >
-                            <i className="fas fa-trash"></i>
+                            <i className="fas fa-trash text-base md:text-lg"></i>
                           </button>
                         </div>
                       </td>
@@ -264,26 +263,32 @@ export default function AdminProducts() {
 
         {/* Paginação */}
         {!loading && totalPages > 1 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200">
-            <div className="flex-1 flex justify-between sm:hidden">
+          <div className="bg-white px-3 md:px-4 py-3 flex items-center justify-between border-t border-gray-200">
+            {/* Mobile */}
+            <div className="flex-1 flex justify-between md:hidden">
               <button
                 onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
               >
                 Anterior
               </button>
+              <span className="text-sm text-gray-700 flex items-center">
+                {currentPage}/{totalPages}
+              </span>
               <button
                 onClick={() =>
                   setCurrentPage((p) => Math.min(totalPages, p + 1))
                 }
                 disabled={currentPage === totalPages}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="relative inline-flex items-center px-3 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
               >
                 Próxima
               </button>
             </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+
+            {/* Desktop */}
+            <div className="hidden md:flex md:flex-1 md:items-center md:justify-between">
               <div>
                 <p className="text-sm text-gray-700">
                   Página <span className="font-medium">{currentPage}</span> de{" "}
