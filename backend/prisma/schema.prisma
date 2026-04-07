@@ -5,7 +5,7 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL") // Adicione esta linha
+  directUrl = env("DATABASE_URL")
 }
 
 model User {
@@ -34,29 +34,71 @@ model Category {
   @@map("categories")
 }
 
-// Model Product ATUALIZADO com campos essenciais
-
 model Product {
   id          String   @id @default(uuid())
   name        String
-  slug        String   @unique  // ⭐ NOVO: URL amigável
+  slug        String   @unique
   description String?
   price       Float
-  salePrice   Float?   // ⭐ NOVO: Preço promocional (opcional)
+  salePrice   Float?
   stock       Int      @default(0)
-  sku         String   @unique  // ⭐ NOVO: Código único do produto
+  sku         String   @unique
   imageUrl    String?
-  isActive    Boolean  @default(true)  // ⭐ NOVO: Ativar/desativar produto
+  isActive    Boolean  @default(true)
   
   categoryId  String
   category    Category @relation(fields: [categoryId], references: [id])
   
   orderItems  OrderItem[]
+  vehicles    ProductVehicle[]  // ⭐ NOVO: Compatibilidade com veículos
   
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
   @@map("products")
+}
+
+// ⭐ NOVO: Modelo de Veículo
+model Vehicle {
+  id        String   @id @default(uuid())
+  brand     String   // Marca: Chevrolet, Fiat, Ford, etc
+  model     String   // Modelo: Onix, Palio, Ka, etc
+  year      Int      // Ano: 1960-2025
+  version   String?  // Versão: LT, LTZ, Premier, etc (opcional)
+  engine    String?  // Motor: 1.0, 1.4, 2.0, etc (opcional)
+  fuelType  String?  // Combustível: Flex, Gasolina, Diesel (opcional)
+  
+  products  ProductVehicle[]  // Produtos compatíveis
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Índices para busca rápida
+  @@index([brand])
+  @@index([model])
+  @@index([year])
+  @@index([brand, model, year])
+  
+  @@map("vehicles")
+}
+
+// ⭐ NOVO: Tabela de relacionamento Product ↔ Vehicle (Many-to-Many)
+model ProductVehicle {
+  id        String   @id @default(uuid())
+  productId String
+  vehicleId String
+  
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+
+  // Garantir que não haja duplicatas
+  @@unique([productId, vehicleId])
+  @@index([productId])
+  @@index([vehicleId])
+  
+  @@map("product_vehicles")
 }
 
 model Order {
