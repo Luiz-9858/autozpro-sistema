@@ -3,11 +3,11 @@ import { Link } from "react-router-dom";
 import { productService } from "../services/api";
 import type { Product } from "../services/api";
 import AddToCartButton from "../components/AddToCartButton";
+import VehicleSelector from "../components/VehicleSelector";
 
 const Home = () => {
   const [featuredProducts, setFeaturedProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
-  const [vehicleSelectorOpen, setVehicleSelectorOpen] = useState(false);
 
   useEffect(() => {
     fetchFeaturedProducts();
@@ -57,124 +57,8 @@ const Home = () => {
         </div>
       </section>
 
-      {/* Vehicle Selector */}
-      <section className="bg-gray-800 py-4 md:py-6">
-        <div className="container mx-auto px-4">
-          {/* MOBILE: Accordion/Vertical */}
-          <div className="lg:hidden">
-            <button
-              onClick={() => setVehicleSelectorOpen(!vehicleSelectorOpen)}
-              className="w-full flex items-center justify-between text-white py-3 px-4 bg-gray-700 rounded-lg mb-3"
-            >
-              <div className="flex items-center gap-3">
-                <i className="fas fa-truck text-xl"></i>
-                <span className="font-semibold">Selecione Seu Veículo</span>
-              </div>
-              <i
-                className={`fas fa-chevron-down transition-transform ${
-                  vehicleSelectorOpen ? "rotate-180" : ""
-                }`}
-              ></i>
-            </button>
-
-            {vehicleSelectorOpen && (
-              <div className="space-y-3 animate-fadeIn">
-                <select
-                  className="w-full px-4 py-3 rounded bg-white text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none"
-                  aria-label="Selecione o ano"
-                >
-                  <option>1️⃣ Escolher Ano</option>
-                  <option>2024</option>
-                  <option>2023</option>
-                  <option>2022</option>
-                </select>
-
-                <select
-                  className="w-full px-4 py-3 rounded bg-white text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none"
-                  aria-label="Selecionar marca"
-                >
-                  <option>2️⃣ Selecionar Marca</option>
-                  <option>Chevrolet</option>
-                  <option>Fiat</option>
-                  <option>Ford</option>
-                  <option>Volkswagen</option>
-                </select>
-
-                <select
-                  className="w-full px-4 py-3 rounded bg-white text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none"
-                  aria-label="Selecionar modelo"
-                >
-                  <option>3️⃣ Selecionar Modelo</option>
-                  <option>Onix</option>
-                  <option>Cruze</option>
-                  <option>S10</option>
-                </select>
-
-                <select
-                  className="w-full px-4 py-3 rounded bg-white text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none"
-                  aria-label="Selecionar peça"
-                >
-                  <option>4️⃣ Selecionar Peça</option>
-                  <option>Filtro de Óleo</option>
-                  <option>Pastilha de Freio</option>
-                  <option>Velas</option>
-                </select>
-
-                <button className="w-full bg-primary hover:bg-primary-dark text-white px-6 py-3 rounded-lg font-semibold transition shadow-lg">
-                  BUSCAR PEÇAS →
-                </button>
-              </div>
-            )}
-          </div>
-
-          {/* DESKTOP: Horizontal */}
-          <div className="hidden lg:flex items-center gap-4">
-            <div className="text-white text-lg xl:text-xl flex items-center gap-2 whitespace-nowrap">
-              <i className="fas fa-truck"></i>
-              <span>Selecione Seu Veículo</span>
-            </div>
-            <div className="flex-1 flex gap-3">
-              <select
-                className="flex-1 px-4 py-2 rounded bg-white text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none"
-                aria-label="Selecione o ano"
-              >
-                <option>1️⃣ Escolher Ano</option>
-                <option>2024</option>
-                <option>2023</option>
-                <option>2022</option>
-              </select>
-              <select
-                className="flex-1 px-4 py-2 rounded bg-white text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none"
-                aria-label="Selecionar marca"
-              >
-                <option>2️⃣ Selecionar Marca</option>
-                <option>Chevrolet</option>
-                <option>Fiat</option>
-                <option>Ford</option>
-              </select>
-              <select
-                className="flex-1 px-4 py-2 rounded bg-white text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none"
-                aria-label="Selecionar modelo"
-              >
-                <option>3️⃣ Selecionar Modelo</option>
-                <option>Onix</option>
-                <option>Cruze</option>
-              </select>
-              <select
-                className="flex-1 px-4 py-2 rounded bg-white text-gray-900 border border-gray-300 focus:ring-2 focus:ring-primary focus:outline-none"
-                aria-label="Selecionar peça"
-              >
-                <option>4️⃣ Selecionar Peça</option>
-                <option>Filtro</option>
-                <option>Freio</option>
-              </select>
-              <button className="bg-primary hover:bg-primary-dark text-white px-6 xl:px-8 py-2 rounded font-semibold transition whitespace-nowrap">
-                IR →
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Vehicle Selector - NOVO COMPONENTE REAL */}
+      <VehicleSelector />
 
       {/* Categories */}
       <section className="py-8 md:py-12 lg:py-16">
