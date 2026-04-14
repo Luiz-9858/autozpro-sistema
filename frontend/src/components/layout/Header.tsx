@@ -136,7 +136,10 @@ export default function Header() {
           </button>
 
           {/* Logo */}
-          <Link to="/" className="flex-shrink-0" onClick={handleLinkClick}>
+          <Link
+            to="/"
+            onClick={() => setSearchTerm("")} // ← Adicionar
+          >
             <img
               src="/logo.png"
               alt="B77 Auto Parts"
