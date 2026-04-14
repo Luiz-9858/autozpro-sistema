@@ -187,12 +187,25 @@ export default function VehicleSelector() {
   };
 
   return (
-    <section className="bg-gray-800 py-4 md:py-6">
+    <section className="bg-gray-800 py-4 md:py-6 vehicle-selector">
+      {" "}
+      {/* ← ADICIONAR classe */}
       <div className="container mx-auto px-4">
         {/* MOBILE: Accordion/Vertical */}
         <div className="lg:hidden">
           <button
-            onClick={() => setIsOpen(!isOpen)}
+            onClick={() => {
+              setIsOpen(!isOpen);
+              // Prevenir scroll para o topo
+              if (!isOpen) {
+                setTimeout(() => {
+                  document.querySelector(".vehicle-selector")?.scrollIntoView({
+                    behavior: "smooth",
+                    block: "nearest",
+                  });
+                }, 100);
+              }
+            }}
             className="w-full flex items-center justify-between text-white py-3 px-4 bg-gray-700 rounded-lg mb-3"
           >
             <div className="flex items-center gap-3">
