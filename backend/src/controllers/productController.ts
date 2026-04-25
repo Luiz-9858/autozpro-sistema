@@ -8,8 +8,9 @@ import prisma from "../config/prisma";
 interface PaginationQuery {
   page?: string;
   limit?: string;
-  categoryId?: string; // ✅ NOVO: Filtro por categoria
-  search?: string; // ✅ NOVO: Busca por nome
+  categoryId?: string;
+  search?: string;
+  vehicleId?: string; // ✅ Filtro por veículo
 }
 
 interface ProductCreateData {
@@ -21,6 +22,7 @@ interface ProductCreateData {
   stock: number;
   imageUrl?: string;
   categoryId: string;
+  vehicleIds?: string[]; // ✅ Associar veículos na criação
 }
 
 interface ProductUpdateData {
@@ -33,6 +35,7 @@ interface ProductUpdateData {
   imageUrl?: string;
   categoryId?: string;
   isActive?: boolean;
+  vehicleIds?: string[]; // ✅ Associar veículos na atualização
 }
 
 // ========================================
@@ -50,10 +53,12 @@ export const getProducts = async (
     const skip: number = (page - 1) * limit;
     const categoryId = req.query.categoryId;
     const search = req.query.search;
+    const vehicleId = req.query.vehicleId; // ✅ Filtro por veículo
 
     console.log(`📄 Buscando produtos - Página ${page}, Limite ${limit}`);
     if (categoryId) console.log(`🏷️  Filtro: Categoria ${categoryId}`);
     if (search) console.log(`🔍 Busca: "${search}"`);
+    if (vehicleId) console.log(`🚗 Filtro: Veículo ${vehicleId}`);
 
     // 2️⃣ Montar filtros dinâmicos
     const where: any = {};
@@ -68,6 +73,15 @@ export const getProducts = async (
         { description: { contains: search, mode: "insensitive" } },
         { sku: { contains: search, mode: "insensitive" } },
       ];
+    }
+
+    // ✅ Filtro por veículo (via tabela de relacionamento)
+    if (vehicleId) {
+      where.vehicles = {
+        some: {
+          vehicleId: vehicleId,
+        },
+      };
     }
 
     // 3️⃣ Buscar produtos com filtros
@@ -85,6 +99,15 @@ export const getProducts = async (
               description: true,
             },
           },
+          // ✅ Incluir veículos compatíveis (condicional)
+          vehicles: vehicleId
+            ? {
+                where: { vehicleId: vehicleId },
+                include: {
+                  vehicle: true, // ✅ CORRIGIDO: Include completo sem select aninhado
+                },
+              }
+            : true, // ✅ CORRIGIDO: true ao invés de false
         },
         orderBy: {
           createdAt: "desc",
@@ -116,6 +139,7 @@ export const getProducts = async (
         filters: {
           categoryId: categoryId || null,
           search: search || null,
+          vehicleId: vehicleId || null,
         },
       },
     });
@@ -151,6 +175,12 @@ export const getProductById = async (
             description: true,
           },
         },
+        // ✅ Incluir todos os veículos compatíveis
+        vehicles: {
+          include: {
+            vehicle: true, // ✅ CORRIGIDO: Include completo
+          },
+        },
       },
     });
 
@@ -179,6 +209,7 @@ export const getProductById = async (
 // ========================================
 // ➕ CREATE PRODUCT
 // ========================================
+
 export const createProduct = async (
   req: Request<{}, {}, ProductCreateData>,
   res: Response,
@@ -193,22 +224,23 @@ export const createProduct = async (
       stock,
       imageUrl,
       categoryId,
+      vehicleIds,
     } = req.body;
 
     // 🔧 Gerar slug automaticamente a partir do nome
     const slug = name
       .toLowerCase()
       .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "") // Remove acentos
-      .replace(/[^\w\s-]/g, "") // Remove caracteres especiais
-      .replace(/\s+/g, "-") // Substitui espaços por hífens
-      .replace(/-+/g, "-") // Remove hífens duplicados
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^\w\s-]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/-+/g, "-")
       .trim();
 
     const product = await prisma.product.create({
       data: {
         name,
-        slug, // ← Slug gerado automaticamente
+        slug,
         sku,
         description: description || null,
         price,
@@ -216,9 +248,22 @@ export const createProduct = async (
         stock,
         imageUrl: imageUrl || null,
         categoryId,
+        // ✅ Associar veículos ao criar
+        ...(vehicleIds && vehicleIds.length > 0
+          ? {
+              vehicles: {
+                create: vehicleIds.map((vehicleId) => ({ vehicleId })),
+              },
+            }
+          : {}),
       },
       include: {
         category: true,
+        vehicles: {
+          include: {
+            vehicle: true, // ✅ CORRIGIDO: Include completo
+          },
+        },
       },
     });
 
@@ -256,6 +301,7 @@ export const updateProduct = async (
       imageUrl,
       categoryId,
       isActive,
+      vehicleIds,
     } = req.body;
 
     // 🔧 Gerar slug automaticamente se o nome foi fornecido
@@ -274,7 +320,7 @@ export const updateProduct = async (
       where: { id },
       data: {
         name,
-        slug, // ← Slug gerado automaticamente
+        slug,
         sku,
         description: description || null,
         price,
@@ -283,9 +329,23 @@ export const updateProduct = async (
         imageUrl: imageUrl || null,
         categoryId,
         isActive,
+        // ✅ Substituir veículos associados (deleteMany + create)
+        ...(vehicleIds !== undefined
+          ? {
+              vehicles: {
+                deleteMany: {},
+                create: vehicleIds.map((vehicleId) => ({ vehicleId })),
+              },
+            }
+          : {}),
       },
       include: {
         category: true,
+        vehicles: {
+          include: {
+            vehicle: true, // ✅ CORRIGIDO: Include completo
+          },
+        },
       },
     });
 
