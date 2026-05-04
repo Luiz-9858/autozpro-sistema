@@ -106,6 +106,7 @@ export const productService = {
     limit: number = 20,
     categoryId?: string,
     search?: string,
+    vehicleId?: string, // ← ADICIONAR ESTE PARÂMETRO
   ): Promise<ProductsResponse> => {
     let url = `/api/products?page=${page}&limit=${limit}`;
 
@@ -115,6 +116,11 @@ export const productService = {
 
     if (search) {
       url += `&search=${encodeURIComponent(search)}`;
+    }
+
+    if (vehicleId) {
+      // ← ADICIONAR ESTE BLOCO
+      url += `&vehicleId=${vehicleId}`;
     }
 
     const response = await api.get(url);
