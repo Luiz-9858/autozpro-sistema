@@ -3,10 +3,14 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { productService, categoryService } from "../services/api";
 import type { Product, PaginationData, Category } from "../services/api";
 import ProductCard from "../components/layout/ProductCard";
+import { useVehicleStore } from "../store/vehicleStore"; // 🚗 NOVO
 
 export default function Products() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
+
+  // 🚗 NOVO: Veículo selecionado
+  const { selectedVehicle, clearVehicle, getVehicleLabel } = useVehicleStore();
 
   const [products, setProducts] = useState<Product[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
@@ -57,11 +61,13 @@ export default function Products() {
       setLoading(true);
       setError("");
 
+      // 🚗 NOVO: Passar vehicleId para API
       const response = await productService.getAll(
         page,
         20,
         categoryId,
         searchTerm,
+        selectedVehicle.vehicleId || undefined, // 🚗 ADICIONAR
       );
 
       if (response.success && response.data) {
@@ -119,11 +125,19 @@ export default function Products() {
     fetchCategories();
   }, []);
 
-  // Buscar produtos quando filtros mudarem
+  // 🚗 NOVO: Buscar produtos quando veículo mudar também
   useEffect(() => {
     fetchProducts(currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentPage, categoryId, searchTerm, sortBy, onlyPromo, onlyStock]);
+  }, [
+    currentPage,
+    categoryId,
+    searchTerm,
+    sortBy,
+    onlyPromo,
+    onlyStock,
+    selectedVehicle.vehicleId,
+  ]);
 
   // Atualizar URL com filtros
   const updateFilters = (updates: Record<string, string | null>) => {
@@ -159,11 +173,18 @@ export default function Products() {
 
   const clearFilters = () => {
     navigate("/products");
+    clearVehicle(); // 🚗 NOVO: Limpar veículo também
     setFiltersOpen(false);
   };
 
+  // 🚗 NOVO: Incluir veículo nos filtros ativos
   const hasActiveFilters =
-    categoryId || searchTerm || onlyPromo || onlyStock || sortBy !== "recent";
+    categoryId ||
+    searchTerm ||
+    onlyPromo ||
+    onlyStock ||
+    sortBy !== "recent" ||
+    selectedVehicle.vehicleId;
 
   const countActiveFilters = () => {
     let count = 0;
@@ -171,12 +192,35 @@ export default function Products() {
     if (onlyPromo) count++;
     if (onlyStock) count++;
     if (sortBy !== "recent") count++;
+    if (selectedVehicle.vehicleId) count++; // 🚗 NOVO
     return count;
   };
 
   // Componente de Filtros (reutilizado em desktop e drawer)
   const FiltersContent = () => (
     <div className="space-y-4">
+      {/* 🚗 NOVO: Mostrar veículo selecionado */}
+      {selectedVehicle.vehicleId && (
+        <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <div className="flex items-center justify-between mb-1">
+            <span className="text-sm font-medium text-blue-900 flex items-center gap-2">
+              <i className="fas fa-car"></i>
+              Veículo Selecionado
+            </span>
+            <button
+              onClick={clearVehicle}
+              className="text-blue-600 hover:text-blue-800 transition-colors"
+              title="Remover filtro"
+            >
+              <i className="fas fa-times"></i>
+            </button>
+          </div>
+          <p className="text-sm text-blue-700 font-semibold">
+            {getVehicleLabel()}
+          </p>
+        </div>
+      )}
+
       {/* Ordenação */}
       <div>
         <label
@@ -281,6 +325,23 @@ export default function Products() {
             {getCategoryName() || "Catálogo de Produtos"}
           </h1>
 
+          {/* 🚗 NOVO: Banner de veículo selecionado */}
+          {selectedVehicle.vehicleId && (
+            <div className="flex items-center gap-2 text-sm bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-3">
+              <i className="fas fa-car text-blue-600"></i>
+              <span className="text-gray-700">
+                Mostrando peças compatíveis com:{" "}
+                <strong className="text-blue-700">{getVehicleLabel()}</strong>
+              </span>
+              <button
+                onClick={clearVehicle}
+                className="ml-auto text-blue-600 hover:text-blue-800 hover:underline font-medium"
+              >
+                Limpar filtro
+              </button>
+            </div>
+          )}
+
           {searchTerm && (
             <p className="text-sm md:text-base text-gray-600 mb-2">
               Resultados para: <strong>"{searchTerm}"</strong>
@@ -375,21 +436,39 @@ export default function Products() {
             ))}
           </div>
         ) : products.length === 0 ? (
+          // 🚗 NOVO: Mensagem personalizada quando não tem produtos
           <div className="text-center py-12 bg-white rounded-lg">
             <i className="fas fa-box-open text-4xl md:text-6xl text-gray-300 mb-4"></i>
             <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">
               Nenhum produto encontrado
             </h3>
-            <p className="text-sm md:text-base text-gray-500 mb-4">
-              Tente ajustar os filtros ou fazer uma nova busca
-            </p>
-            {hasActiveFilters && (
-              <button
-                onClick={clearFilters}
-                className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-red-700 transition text-sm md:text-base"
-              >
-                Limpar Filtros
-              </button>
+            {selectedVehicle.vehicleId ? (
+              <>
+                <p className="text-sm md:text-base text-gray-500 mb-4">
+                  Não encontramos peças compatíveis com{" "}
+                  <strong>{getVehicleLabel()}</strong>
+                </p>
+                <button
+                  onClick={clearVehicle}
+                  className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-red-700 transition text-sm md:text-base"
+                >
+                  Limpar filtro de veículo
+                </button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm md:text-base text-gray-500 mb-4">
+                  Tente ajustar os filtros ou fazer uma nova busca
+                </p>
+                {hasActiveFilters && (
+                  <button
+                    onClick={clearFilters}
+                    className="bg-primary text-white px-6 py-2 rounded-lg hover:bg-red-700 transition text-sm md:text-base"
+                  >
+                    Limpar Filtros
+                  </button>
+                )}
+              </>
             )}
           </div>
         ) : (
