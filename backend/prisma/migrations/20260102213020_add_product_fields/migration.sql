@@ -1,2 +1,2 @@
 -- AlterTable
-ALTER TABLE "products" ADD COLUMN     "isActive" BOOLEAN NOT NULL DEFAULT true;
+ALTER TABLE [products] ADD [isActive] BIT NOT NULL DEFAULT 1;
