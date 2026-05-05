@@ -5,9 +5,13 @@ import AddToCartButton from "../AddToCartButton";
 
 interface ProductCardProps {
   product: Product;
+  showCompatibleBadge?: boolean; // 🚗 NOVO: Mostrar badge de compatibilidade
 }
 
-export default function ProductCard({ product }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  showCompatibleBadge = false,
+}: ProductCardProps) {
   const [imageError, setImageError] = useState(false);
 
   const handleImageError = () => {
@@ -50,6 +54,16 @@ export default function ProductCard({ product }: ProductCardProps) {
               </span>
             )}
           </div>
+
+          {/* 🚗 NOVO: Badge Compatível */}
+          {showCompatibleBadge && (
+            <div className="absolute top-2 right-2 z-10">
+              <span className="bg-green-500 text-white text-xs font-bold px-2.5 py-1 rounded-md shadow-lg flex items-center gap-1">
+                <i className="fas fa-check-circle"></i>
+                Compatível
+              </span>
+            </div>
+          )}
 
           {/* Badge de Frete Grátis (simulado) */}
           {product.price > 299 && product.stock > 0 && (
