@@ -4,6 +4,17 @@ import { productService } from "../services/api";
 import type { Product } from "../services/api";
 import AddToCartButton from "../components/AddToCartButton";
 
+// 🚗 NOVO: Tipo para veículo
+interface Vehicle {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  version?: string | null;
+  engine?: string | null;
+  fuelType?: string | null;
+}
+
 export default function ProductDetail() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -13,6 +24,11 @@ export default function ProductDetail() {
   const [error, setError] = useState("");
   const [quantity, setQuantity] = useState(1);
   const [imageError, setImageError] = useState(false);
+
+  // 🚗 NOVO: Estado para accordion de veículos
+  const [expandedBrands, setExpandedBrands] = useState<Record<string, boolean>>(
+    {},
+  );
 
   useEffect(() => {
     if (id) {
@@ -54,6 +70,44 @@ export default function ProductDetail() {
     if (quantity > 1) {
       setQuantity(quantity - 1);
     }
+  };
+
+  // 🚗 NOVO: Organizar veículos por marca
+  const getVehiclesByBrand = () => {
+    if (!product?.vehicles) return {};
+
+    const vehiclesByBrand: Record<string, Vehicle[]> = {};
+
+    product.vehicles.forEach((pv) => {
+      const vehicle = pv.vehicle;
+      if (!vehicle) return;
+
+      const brand = vehicle.brand;
+      if (!vehiclesByBrand[brand]) {
+        vehiclesByBrand[brand] = [];
+      }
+      vehiclesByBrand[brand].push(vehicle);
+    });
+
+    // Ordenar veículos dentro de cada marca por ano (mais recente primeiro)
+    Object.keys(vehiclesByBrand).forEach((brand) => {
+      vehiclesByBrand[brand].sort((a, b) => b.year - a.year);
+    });
+
+    return vehiclesByBrand;
+  };
+
+  // 🚗 NOVO: Toggle accordion de marca
+  const toggleBrand = (brand: string) => {
+    setExpandedBrands((prev) => ({
+      ...prev,
+      [brand]: !prev[brand],
+    }));
+  };
+
+  // 🚗 NOVO: Contar total de veículos
+  const getTotalVehicles = () => {
+    return product?.vehicles?.length || 0;
   };
 
   // Loading
@@ -107,6 +161,8 @@ export default function ProductDetail() {
     : 0;
 
   const finalPrice = product.salePrice || product.price;
+  const vehiclesByBrand = getVehiclesByBrand();
+  const totalVehicles = getTotalVehicles();
 
   return (
     <div className="min-h-screen bg-gray-50 py-4 md:py-8">
@@ -415,6 +471,102 @@ export default function ProductDetail() {
                   </span>
                 </div>
               </div>
+            </div>
+
+            {/* 🚗 NOVO: Veículos Compatíveis */}
+            <div className="border-t pt-4 md:pt-6 mt-4 md:mt-6">
+              <h3 className="text-base md:text-lg font-bold text-gray-900 mb-3 md:mb-4 flex items-center gap-2">
+                <i className="fas fa-car text-primary"></i>
+                Veículos Compatíveis
+                {totalVehicles > 0 && (
+                  <span className="text-sm font-normal text-gray-600">
+                    ({totalVehicles}{" "}
+                    {totalVehicles === 1 ? "veículo" : "veículos"})
+                  </span>
+                )}
+              </h3>
+
+              {totalVehicles > 0 ? (
+                <div className="space-y-2">
+                  {Object.keys(vehiclesByBrand)
+                    .sort()
+                    .map((brand) => (
+                      <div
+                        key={brand}
+                        className="border border-gray-200 rounded-lg overflow-hidden"
+                      >
+                        {/* Header do Accordion */}
+                        <button
+                          onClick={() => toggleBrand(brand)}
+                          className="w-full flex items-center justify-between p-3 bg-gray-50 hover:bg-gray-100 transition text-left"
+                        >
+                          <div className="flex items-center gap-2">
+                            <i className="fas fa-car text-gray-600 text-sm"></i>
+                            <span className="font-semibold text-gray-900 text-sm md:text-base">
+                              {brand}
+                            </span>
+                            <span className="text-xs text-gray-500">
+                              ({vehiclesByBrand[brand].length}{" "}
+                              {vehiclesByBrand[brand].length === 1
+                                ? "veículo"
+                                : "veículos"}
+                              )
+                            </span>
+                          </div>
+                          <i
+                            className={`fas fa-chevron-down text-gray-600 transition-transform text-sm ${
+                              expandedBrands[brand] ? "rotate-180" : ""
+                            }`}
+                          ></i>
+                        </button>
+
+                        {/* Lista de Veículos */}
+                        {expandedBrands[brand] && (
+                          <div className="p-3 bg-white">
+                            <ul className="space-y-2">
+                              {vehiclesByBrand[brand].map((vehicle) => (
+                                <li
+                                  key={vehicle.id}
+                                  className="flex items-start gap-2 text-xs md:text-sm text-gray-700 py-1"
+                                >
+                                  <i className="fas fa-check-circle text-green-600 mt-0.5"></i>
+                                  <span>
+                                    <strong>{vehicle.model}</strong>{" "}
+                                    {vehicle.year}
+                                    {vehicle.version && (
+                                      <span className="text-gray-500">
+                                        {" "}
+                                        - {vehicle.version}
+                                      </span>
+                                    )}
+                                    {vehicle.engine && (
+                                      <span className="text-gray-500">
+                                        {" "}
+                                        ({vehicle.engine})
+                                      </span>
+                                    )}
+                                  </span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <div className="text-center py-6 bg-gray-50 rounded-lg">
+                  <i className="fas fa-info-circle text-3xl text-gray-400 mb-2"></i>
+                  <p className="text-sm text-gray-600">
+                    Este produto ainda não possui compatibilidade específica
+                    cadastrada.
+                  </p>
+                  <p className="text-xs text-gray-500 mt-1">
+                    Entre em contato para verificar a compatibilidade com seu
+                    veículo.
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Selos de Confiança */}
