@@ -74,9 +74,23 @@ export interface Product {
     id: string;
     name: string;
     slug: string;
+    description?: string | null;
   };
   createdAt: string;
   updatedAt: string;
+  // 🚗 ADICIONAR ESTA PROPRIEDADE:
+  vehicles?: Array<{
+    id: string;
+    vehicle: {
+      id: string;
+      brand: string;
+      model: string;
+      year: number;
+      version?: string | null;
+      engine?: string | null;
+      fuelType?: string | null;
+    };
+  }>;
 }
 
 export interface PaginationData {
