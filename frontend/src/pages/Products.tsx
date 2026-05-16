@@ -3,13 +3,12 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { productService, categoryService } from "../services/api";
 import type { Product, PaginationData, Category } from "../services/api";
 import ProductCard from "../components/layout/ProductCard";
-import { useVehicleStore } from "../store/vehicleStore"; // 🚗 NOVO
+import { useVehicleStore } from "../store/vehicleStore";
 
 export default function Products() {
   const [searchParams] = useSearchParams();
   const navigate = useNavigate();
 
-  // 🚗 NOVO: Veículo selecionado
   const { selectedVehicle, clearVehicle, getVehicleLabel } = useVehicleStore();
 
   const [products, setProducts] = useState<Product[]>([]);
@@ -43,7 +42,6 @@ export default function Products() {
     }
   }, [filtersOpen]);
 
-  // 🔄 Função para buscar categorias
   const fetchCategories = async () => {
     try {
       const response = await categoryService.getAll();
@@ -55,19 +53,17 @@ export default function Products() {
     }
   };
 
-  // 🔄 Função para buscar produtos
   const fetchProducts = async (page: number = 1) => {
     try {
       setLoading(true);
       setError("");
 
-      // 🚗 NOVO: Passar vehicleId para API
       const response = await productService.getAll(
         page,
         20,
         categoryId,
         searchTerm,
-        selectedVehicle.vehicleId || undefined, // 🚗 ADICIONAR
+        selectedVehicle.vehicleId || undefined,
       );
 
       if (response.success && response.data) {
@@ -125,7 +121,7 @@ export default function Products() {
     fetchCategories();
   }, []);
 
-  // 🚗 NOVO: Buscar produtos quando veículo mudar também
+  // Buscar produtos quando algo mudar
   useEffect(() => {
     fetchProducts(currentPage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -139,8 +135,11 @@ export default function Products() {
     selectedVehicle.vehicleId,
   ]);
 
-  // Atualizar URL com filtros
-  const updateFilters = (updates: Record<string, string | null>) => {
+  // 🔧 CORRIGIDO: Atualizar URL com filtros (com opção de resetar página)
+  const updateFilters = (
+    updates: Record<string, string | null>,
+    resetPage: boolean = true, // ← NOVO PARÂMETRO
+  ) => {
     const params = new URLSearchParams(searchParams);
 
     Object.entries(updates).forEach(([key, value]) => {
@@ -151,16 +150,19 @@ export default function Products() {
       }
     });
 
-    // Resetar para página 1 ao mudar filtros
-    params.set("page", "1");
+    // 🔧 CORRIGIDO: Só resetar página se não for mudança de página
+    if (resetPage && !updates.page) {
+      params.set("page", "1");
+    }
 
     navigate(`?${params.toString()}`);
-    setFiltersOpen(false); // Fechar drawer após aplicar filtro
+    setFiltersOpen(false);
   };
 
+  // 🔧 CORRIGIDO: Não resetar página ao navegar
   const goToPage = (page: number) => {
     if (page >= 1 && page <= pagination.totalPages) {
-      updateFilters({ page: page.toString() });
+      updateFilters({ page: page.toString() }, false); // ← false = não resetar!
       window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
@@ -173,11 +175,10 @@ export default function Products() {
 
   const clearFilters = () => {
     navigate("/products");
-    clearVehicle(); // 🚗 NOVO: Limpar veículo também
+    clearVehicle();
     setFiltersOpen(false);
   };
 
-  // 🚗 NOVO: Incluir veículo nos filtros ativos
   const hasActiveFilters =
     categoryId ||
     searchTerm ||
@@ -192,14 +193,12 @@ export default function Products() {
     if (onlyPromo) count++;
     if (onlyStock) count++;
     if (sortBy !== "recent") count++;
-    if (selectedVehicle.vehicleId) count++; // 🚗 NOVO
+    if (selectedVehicle.vehicleId) count++;
     return count;
   };
 
-  // Componente de Filtros (reutilizado em desktop e drawer)
   const FiltersContent = () => (
     <div className="space-y-4">
-      {/* 🚗 NOVO: Mostrar veículo selecionado */}
       {selectedVehicle.vehicleId && (
         <div className="p-3 bg-blue-50 border border-blue-200 rounded-lg">
           <div className="flex items-center justify-between mb-1">
@@ -325,7 +324,6 @@ export default function Products() {
             {getCategoryName() || "Catálogo de Produtos"}
           </h1>
 
-          {/* 🚗 NOVO: Banner de veículo selecionado */}
           {selectedVehicle.vehicleId && (
             <div className="flex items-center gap-2 text-sm bg-blue-50 border border-blue-200 rounded-lg px-4 py-3 mb-3">
               <i className="fas fa-car text-blue-600"></i>
@@ -356,7 +354,7 @@ export default function Products() {
           </p>
         </div>
 
-        {/* Botão Filtros Mobile - APENAS MOBILE */}
+        {/* Botão Filtros Mobile */}
         <div className="lg:hidden mb-4">
           <button
             onClick={() => setFiltersOpen(true)}
@@ -372,7 +370,7 @@ export default function Products() {
           </button>
         </div>
 
-        {/* Filtros Desktop - APENAS DESKTOP */}
+        {/* Filtros Desktop */}
         <div className="hidden lg:block mb-6 bg-white p-4 rounded-lg shadow-sm border border-gray-200">
           <FiltersContent />
         </div>
@@ -380,15 +378,12 @@ export default function Products() {
         {/* Drawer Mobile */}
         {filtersOpen && (
           <>
-            {/* Overlay */}
             <div
               className="lg:hidden fixed inset-0 bg-black bg-opacity-50 z-40"
               onClick={() => setFiltersOpen(false)}
             />
 
-            {/* Drawer */}
             <div className="lg:hidden fixed top-0 right-0 h-full w-80 max-w-[85vw] bg-white z-50 transform transition-transform duration-300 ease-in-out overflow-y-auto">
-              {/* Header do Drawer */}
               <div className="bg-primary text-white p-4 flex items-center justify-between sticky top-0 z-10">
                 <div className="flex items-center gap-2">
                   <i className="fas fa-filter"></i>
@@ -408,7 +403,6 @@ export default function Products() {
                 </button>
               </div>
 
-              {/* Conteúdo do Drawer */}
               <div className="p-4">
                 <FiltersContent />
               </div>
@@ -436,7 +430,6 @@ export default function Products() {
             ))}
           </div>
         ) : products.length === 0 ? (
-          // 🚗 NOVO: Mensagem personalizada quando não tem produtos
           <div className="text-center py-12 bg-white rounded-lg">
             <i className="fas fa-box-open text-4xl md:text-6xl text-gray-300 mb-4"></i>
             <h3 className="text-lg md:text-xl font-semibold text-gray-700 mb-2">
@@ -476,14 +469,18 @@ export default function Products() {
             {/* Grid de produtos */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-6 md:mb-8">
               {products.map((product) => (
-                <ProductCard key={product.id} product={product} />
+                <ProductCard
+                  key={product.id}
+                  product={product}
+                  showCompatibleBadge={!!selectedVehicle.vehicleId}
+                />
               ))}
             </div>
 
             {/* Paginação */}
             {pagination.totalPages > 1 && (
               <>
-                {/* Paginação Mobile - SIMPLES */}
+                {/* Paginação Mobile */}
                 <div className="lg:hidden flex justify-center items-center gap-3 mt-6 mb-4">
                   <button
                     onClick={() => goToPage(pagination.currentPage - 1)}
@@ -508,7 +505,7 @@ export default function Products() {
                   </button>
                 </div>
 
-                {/* Paginação Desktop - COMPLETA */}
+                {/* Paginação Desktop */}
                 <div className="hidden lg:flex justify-center items-center gap-2 mt-8 mb-4">
                   <button
                     onClick={() => goToPage(1)}
