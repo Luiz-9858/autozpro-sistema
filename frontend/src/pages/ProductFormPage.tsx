@@ -18,6 +18,17 @@ interface ProductFormData {
   imageUrl: string;
 }
 
+// 🚗 NOVO: Interface para veículo
+interface Vehicle {
+  id: string;
+  brand: string;
+  model: string;
+  year: number;
+  version?: string | null;
+  engine?: string | null;
+  fuelType?: string | null;
+}
+
 export default function ProductFormPage() {
   const { id } = useParams<{ id: string }>();
   const navigate = useNavigate();
@@ -39,7 +50,13 @@ export default function ProductFormPage() {
     imageUrl: "",
   });
 
-  // 🔄 Buscar categorias ao carregar
+  // 🚗 NOVO: Estados para veículos
+  const [associatedVehicles, setAssociatedVehicles] = useState<Vehicle[]>([]);
+  const [vehicleSearch, setVehicleSearch] = useState("");
+  const [vehicleResults, setVehicleResults] = useState<Vehicle[]>([]);
+  const [searchingVehicles, setSearchingVehicles] = useState(false);
+  const [showVehicleResults, setShowVehicleResults] = useState(false);
+
   useEffect(() => {
     fetchCategories();
     if (isEditing) {
@@ -47,6 +64,22 @@ export default function ProductFormPage() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id, isEditing]);
+
+  // 🚗 NOVO: Buscar veículos com debounce
+  useEffect(() => {
+    if (vehicleSearch.length < 3) {
+      setVehicleResults([]);
+      setShowVehicleResults(false);
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      searchVehicles(vehicleSearch);
+    }, 500);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [vehicleSearch]);
 
   const fetchCategories = async () => {
     try {
@@ -80,6 +113,14 @@ export default function ProductFormPage() {
           isActive: product.isActive,
           imageUrl: product.imageUrl || "",
         });
+
+        // 🚗 NOVO: Carregar veículos associados
+        if (product.vehicles) {
+          const vehicles = product.vehicles.map(
+            (pv: { vehicle: Vehicle }) => pv.vehicle,
+          );
+          setAssociatedVehicles(vehicles);
+        }
       }
     } catch (err) {
       console.error("Erro ao buscar produto:", err);
@@ -87,6 +128,68 @@ export default function ProductFormPage() {
     } finally {
       setLoadingData(false);
     }
+  };
+
+  // 🚗 NOVO: Buscar veículos na API
+  const searchVehicles = async (query: string) => {
+    try {
+      setSearchingVehicles(true);
+
+      // Chamar API de veículos (você precisa ter este endpoint)
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/vehicles/admin-search?q=${encodeURIComponent(query)}`,
+        {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        },
+      );
+
+      if (!response.ok) throw new Error("Erro ao buscar veículos");
+
+      const data = await response.json();
+
+      if (data.success && data.data) {
+        // Filtrar veículos já associados
+        const filtered = data.data.filter(
+          (v: Vehicle) => !associatedVehicles.find((av) => av.id === v.id),
+        );
+        setVehicleResults(filtered);
+        setShowVehicleResults(true);
+      }
+    } catch (err) {
+      console.error("Erro ao buscar veículos:", err);
+      toast.error("Erro ao buscar veículos");
+    } finally {
+      setSearchingVehicles(false);
+    }
+  };
+
+  // 🚗 NOVO: Adicionar veículo à lista
+  const handleAddVehicle = (vehicle: Vehicle) => {
+    setAssociatedVehicles((prev) => [...prev, vehicle]);
+    setVehicleSearch("");
+    setVehicleResults([]);
+    setShowVehicleResults(false);
+    toast.success(`${vehicle.brand} ${vehicle.model} adicionado!`);
+  };
+
+  // 🚗 NOVO: Remover veículo da lista
+  const handleRemoveVehicle = (vehicleId: string) => {
+    const vehicle = associatedVehicles.find((v) => v.id === vehicleId);
+    setAssociatedVehicles((prev) => prev.filter((v) => v.id !== vehicleId));
+
+    if (vehicle) {
+      toast.success(`${vehicle.brand} ${vehicle.model} removido!`);
+    }
+  };
+
+  // 🚗 NOVO: Formatar label do veículo
+  const getVehicleLabel = (vehicle: Vehicle) => {
+    let label = `${vehicle.brand} ${vehicle.model} ${vehicle.year}`;
+    if (vehicle.version) label += ` - ${vehicle.version}`;
+    if (vehicle.engine) label += ` (${vehicle.engine})`;
+    return label;
   };
 
   const handleChange = (
@@ -104,7 +207,6 @@ export default function ProductFormPage() {
     }
   };
 
-  // 🖼️ Handler para quando a imagem é enviada
   const handleImageUploaded = (imageUrl: string) => {
     setFormData((prev) => ({ ...prev, imageUrl }));
   };
@@ -154,12 +256,22 @@ export default function ProductFormPage() {
     try {
       setLoading(true);
 
+      let productId = id;
+
       if (isEditing) {
-        await productService.update(id, productData);
+        await productService.update(id!, productData);
         toast.success("Produto atualizado com sucesso!");
       } else {
-        await productService.create(productData);
+        const response = await productService.create(productData);
+        if (response.success && response.data) {
+          productId = response.data.id;
+        }
         toast.success("Produto criado com sucesso!");
+      }
+
+      // 🚗 NOVO: Salvar associações de veículos
+      if (productId && associatedVehicles.length > 0) {
+        await saveVehicleAssociations(productId);
       }
 
       navigate("/admin/products");
@@ -176,11 +288,32 @@ export default function ProductFormPage() {
     }
   };
 
-  // 💀 SKELETON LOADING ao carregar produto para edição
+  // 🚗 NOVO: Salvar associações de veículos
+  const saveVehicleAssociations = async (productId: string) => {
+    try {
+      // Salvar cada veículo associado
+      for (const vehicle of associatedVehicles) {
+        await fetch(
+          `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/products/${productId}/vehicles`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+            body: JSON.stringify({ vehicleId: vehicle.id }),
+          },
+        );
+      }
+    } catch (err) {
+      console.error("Erro ao salvar associações de veículos:", err);
+      toast.error("Produto salvo, mas houve erro ao associar veículos");
+    }
+  };
+
   if (loadingData) {
     return (
       <div className="space-y-6">
-        {/* Header Skeleton */}
         <div className="flex items-center gap-4">
           <div className="h-6 w-6 bg-gray-200 rounded animate-pulse" />
           <div className="space-y-2">
@@ -188,8 +321,6 @@ export default function ProductFormPage() {
             <div className="h-4 w-64 bg-gray-200 rounded animate-pulse" />
           </div>
         </div>
-
-        {/* Form Skeleton */}
         <FormSkeleton />
       </div>
     );
@@ -378,7 +509,7 @@ export default function ProductFormPage() {
           </div>
         </div>
 
-        {/* 🖼️ UPLOAD DE IMAGEM (NOVO) */}
+        {/* Upload de Imagem */}
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Imagem do Produto
@@ -393,8 +524,136 @@ export default function ProductFormPage() {
           </p>
         </div>
 
+        {/* 🚗 NOVO: Seção de Veículos Compatíveis */}
+        <div className="border-t pt-6">
+          <div className="mb-4">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center gap-2">
+              <i className="fas fa-car text-primary"></i>
+              Veículos Compatíveis
+              {associatedVehicles.length > 0 && (
+                <span className="text-sm font-normal text-gray-600">
+                  ({associatedVehicles.length})
+                </span>
+              )}
+            </h3>
+            <p className="text-sm text-gray-600 mt-1">
+              Associe este produto aos veículos compatíveis
+            </p>
+          </div>
+
+          {/* Busca de Veículos */}
+          <div className="relative mb-4">
+            <label
+              htmlFor="vehicle-search"
+              className="block text-sm font-medium text-gray-700 mb-2"
+            >
+              Buscar Veículo
+            </label>
+            <div className="relative">
+              <input
+                type="text"
+                id="vehicle-search"
+                value={vehicleSearch}
+                onChange={(e) => setVehicleSearch(e.target.value)}
+                placeholder="Digite marca, modelo ou ano... (min. 3 caracteres)"
+                className="w-full px-4 py-2 pr-10 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary"
+              />
+              <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                {searchingVehicles ? (
+                  <i className="fas fa-spinner fa-spin text-gray-400"></i>
+                ) : (
+                  <i className="fas fa-search text-gray-400"></i>
+                )}
+              </div>
+            </div>
+
+            {/* Resultados da busca */}
+            {showVehicleResults && vehicleResults.length > 0 && (
+              <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg max-h-60 overflow-y-auto">
+                {vehicleResults.map((vehicle) => (
+                  <button
+                    key={vehicle.id}
+                    type="button"
+                    onClick={() => handleAddVehicle(vehicle)}
+                    className="w-full text-left px-4 py-3 hover:bg-gray-50 border-b last:border-b-0 transition"
+                  >
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className="text-sm font-medium text-gray-900">
+                          {getVehicleLabel(vehicle)}
+                        </p>
+                        {vehicle.fuelType && (
+                          <p className="text-xs text-gray-500">
+                            {vehicle.fuelType}
+                          </p>
+                        )}
+                      </div>
+                      <i className="fas fa-plus-circle text-primary"></i>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {showVehicleResults &&
+              vehicleResults.length === 0 &&
+              !searchingVehicles && (
+                <div className="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-lg shadow-lg p-4 text-center text-sm text-gray-500">
+                  Nenhum veículo encontrado
+                </div>
+              )}
+          </div>
+
+          {/* Lista de Veículos Associados */}
+          {associatedVehicles.length > 0 ? (
+            <div className="space-y-2">
+              <p className="text-sm font-medium text-gray-700 mb-2">
+                Veículos Associados:
+              </p>
+              {associatedVehicles.map((vehicle) => (
+                <div
+                  key={vehicle.id}
+                  className="flex items-center justify-between p-3 bg-green-50 border border-green-200 rounded-lg"
+                >
+                  <div className="flex items-center gap-2">
+                    <i className="fas fa-check-circle text-green-600"></i>
+                    <div>
+                      <p className="text-sm font-medium text-gray-900">
+                        {getVehicleLabel(vehicle)}
+                      </p>
+                      {vehicle.fuelType && (
+                        <p className="text-xs text-gray-500">
+                          {vehicle.fuelType}
+                        </p>
+                      )}
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveVehicle(vehicle.id)}
+                    className="text-red-600 hover:text-red-800 transition"
+                    title="Remover veículo"
+                  >
+                    <i className="fas fa-times-circle text-lg"></i>
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 bg-gray-50 rounded-lg border-2 border-dashed border-gray-300">
+              <i className="fas fa-car text-4xl text-gray-300 mb-2"></i>
+              <p className="text-sm text-gray-600">
+                Nenhum veículo associado ainda
+              </p>
+              <p className="text-xs text-gray-500 mt-1">
+                Use a busca acima para adicionar veículos compatíveis
+              </p>
+            </div>
+          )}
+        </div>
+
         {/* Status Ativo */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 border-t pt-6">
           <input
             type="checkbox"
             name="isActive"
