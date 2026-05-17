@@ -44,6 +44,52 @@ router.get("/models", getModels);
  */
 router.get("/versions", getVersions);
 
+/**
+ * GET /api/vehicles/admin-search?q=termo
+ * Busca livre por texto (para admin associar produtos)
+ */
+router.get("/admin-search", async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    if (!q || typeof q !== "string" || q.length < 3) {
+      return res.status(400).json({
+        success: false,
+        message: "Digite no mínimo 3 caracteres",
+      });
+    }
+
+    const searchTerm = q.toLowerCase();
+    const { PrismaClient } = await import("@prisma/client");
+    const prisma = new PrismaClient();
+
+    const vehicles = await prisma.vehicle.findMany({
+      where: {
+        OR: [
+          { brand: { contains: searchTerm, mode: "insensitive" } },
+          { model: { contains: searchTerm, mode: "insensitive" } },
+          { version: { contains: searchTerm, mode: "insensitive" } },
+        ],
+      },
+      orderBy: [{ brand: "asc" }, { model: "asc" }, { year: "desc" }],
+      take: 50,
+    });
+
+    await prisma.$disconnect();
+
+    res.json({
+      success: true,
+      data: vehicles,
+    });
+  } catch (error) {
+    console.error("Erro ao buscar veículos:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro ao buscar veículos",
+    });
+  }
+});
+
 // ========== BUSCA E STATS ==========
 
 /**
