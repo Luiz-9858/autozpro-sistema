@@ -1,4 +1,6 @@
 import { PrismaClient } from "@prisma/client";
+// declare const process: NodeJS.Process; // Para evitar erro de "Cannot find name 'process'"
+declare const process: { exit(code?: number): never };
 
 const prisma = new PrismaClient();
 
