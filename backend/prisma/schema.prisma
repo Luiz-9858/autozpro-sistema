@@ -5,8 +5,33 @@ generator client {
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
-  // DELETAR essa linha: directUrl = env("DATABASE_URL")
 }
+
+// ========================================
+// 📋 ENUMS
+// ========================================
+
+enum OrderStatus {
+  PENDING      // Aguardando pagamento
+  PAID         // Pago
+  PROCESSING   // Em separação
+  SHIPPED      // Enviado
+  DELIVERED    // Entregue
+  CANCELLED    // Cancelado
+  REFUNDED     // Reembolsado
+}
+
+enum PaymentMethod {
+  PIX
+  CREDIT_CARD
+  DEBIT_CARD
+  BOLETO
+  TRANSFER
+}
+
+// ========================================
+// 👤 USUÁRIOS
+// ========================================
 
 model User {
   id        String   @id @default(uuid())
@@ -20,6 +45,10 @@ model User {
 
   @@map("users")
 }
+
+// ========================================
+// 📦 PRODUTOS E CATEGORIAS
+// ========================================
 
 model Category {
   id          String    @id @default(uuid())
@@ -45,84 +74,150 @@ model Product {
   sku         String   @unique
   imageUrl    String?
   isActive    Boolean  @default(true)
-  
-  categoryId  String
-  category    Category @relation(fields: [categoryId], references: [id])
-  
-  orderItems  OrderItem[]
-  vehicles    ProductVehicle[]  // ⭐ NOVO: Compatibilidade com veículos
-  
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+
+  categoryId String
+  category   Category @relation(fields: [categoryId], references: [id])
+
+  orderItems OrderItem[]
+  vehicles   ProductVehicle[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@map("products")
 }
 
-// ⭐ NOVO: Modelo de Veículo
+// ========================================
+// 🚗 VEÍCULOS E COMPATIBILIDADE
+// ========================================
+
 model Vehicle {
-  id        String   @id @default(uuid())
-  brand     String   // Marca: Chevrolet, Fiat, Ford, etc
-  model     String   // Modelo: Onix, Palio, Ka, etc
-  year      Int      // Ano: 1960-2025
-  version   String?  // Versão: LT, LTZ, Premier, etc (opcional)
-  engine    String?  // Motor: 1.0, 1.4, 2.0, etc (opcional)
-  fuelType  String?  // Combustível: Flex, Gasolina, Diesel (opcional)
-  
-  products  ProductVehicle[]  // Produtos compatíveis
-  
+  id       String  @id @default(uuid())
+  brand    String
+  model    String
+  year     Int
+  version  String?
+  engine   String?
+  fuelType String?
+
+  products ProductVehicle[]
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Índices para busca rápida
   @@index([brand])
   @@index([model])
   @@index([year])
   @@index([brand, model, year])
-  
+
   @@map("vehicles")
 }
 
-// ⭐ NOVO: Tabela de relacionamento Product ↔ Vehicle (Many-to-Many)
 model ProductVehicle {
-  id        String   @id @default(uuid())
+  id        String @id @default(uuid())
   productId String
   vehicleId String
-  
-  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  vehicle   Vehicle  @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
-  
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  vehicle Vehicle @relation(fields: [vehicleId], references: [id], onDelete: Cascade)
+
   createdAt DateTime @default(now())
 
-  // Garantir que não haja duplicatas
   @@unique([productId, vehicleId])
   @@index([productId])
   @@index([vehicleId])
-  
+
   @@map("product_vehicles")
 }
 
+// ========================================
+// 🛒 PEDIDOS - CHECKOUT COMPLETO
+// ========================================
+
 model Order {
-  id         String      @id @default(uuid())
-  userId     String
-  status     String      @default("pending")
-  total      Float
-  createdAt  DateTime    @default(now())
-  updatedAt  DateTime    @updatedAt
-  user       User        @relation(fields: [userId], references: [id])
-  orderItems OrderItem[]
+  id          String @id @default(uuid())
+  orderNumber String @unique // Ex: AZ-2024-00001
+
+  // 👤 Cliente (userId opcional: permite compra sem login)
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id])
+
+  customerName     String
+  customerEmail    String
+  customerPhone    String
+  customerDocument String // CPF ou CNPJ
+
+  // 📍 Endereço de entrega
+  zipCode      String
+  street       String
+  number       String
+  complement   String?
+  neighborhood String
+  city         String
+  state        String // UF: SP, RJ, MG...
+
+  // 💰 Valores
+  subtotal Decimal @db.Decimal(10, 2)           // Soma dos produtos
+  shipping Decimal @db.Decimal(10, 2) @default(0) // Frete
+  discount Decimal @db.Decimal(10, 2) @default(0) // Desconto/Cupom
+  total    Decimal @db.Decimal(10, 2)           // Total final
+
+  // 📋 Status e pagamento
+  status        OrderStatus    @default(PENDING)
+  paymentMethod PaymentMethod?
+
+  // 🔗 Integrações externas
+  paymentId    String? // ID do Mercado Pago/PagSeguro/Stripe
+  trackingCode String? // Código de rastreio (Correios)
+
+  // 📝 Observações
+  notes String? // Observações do cliente
+
+  // 📅 Ciclo de vida do pedido
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+  paidAt      DateTime? // Quando foi pago
+  shippedAt   DateTime? // Quando foi enviado
+  deliveredAt DateTime? // Quando foi entregue
+  cancelledAt DateTime? // Quando foi cancelado
+
+  // 📦 Itens do pedido
+  items OrderItem[]
+
+  @@index([userId])
+  @@index([orderNumber])
+  @@index([customerEmail])
+  @@index([status])
+  @@index([createdAt])
 
   @@map("orders")
 }
 
 model OrderItem {
-  id        String   @id @default(uuid())
-  orderId   String
-  productId String
-  quantity  Int
-  price     Float
+  id      String @id @default(uuid())
+  orderId String
+
+  // Referência ao produto (nullable se deletado)
+  productId String?
+  product   Product? @relation(fields: [productId], references: [id], onDelete: SetNull)
+
+  // 📸 Snapshot do produto no momento da compra
+  // (Garante histórico mesmo se produto for editado/deletado)
+  productName  String
+  productSku   String
+  productImage String?
+
+  // 💰 Valores
+  quantity   Int
+  unitPrice  Decimal @db.Decimal(10, 2) // Preço unitário
+  totalPrice Decimal @db.Decimal(10, 2) // quantity * unitPrice
+
   createdAt DateTime @default(now())
-  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  product   Product  @relation(fields: [productId], references: [id])
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId])
+  @@index([productId])
 
   @@map("order_items")
 }
