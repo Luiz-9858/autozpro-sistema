@@ -5,8 +5,16 @@ import type { Product, CartItem } from "../types/index";
 /**
  * 🛒 STORE: Carrinho de Compras
  *
- * Gerencia itens do carrinho com persistência no localStorage.
- * Sincroniza stock e preços automaticamente.
+ * ✅ PRONTO PARA CHECKOUT!
+ * - Gerencia itens com persistência localStorage
+ * - Sincroniza stock e preços automaticamente
+ * - Integra perfeitamente com página de checkout
+ *
+ * O checkout vai usar:
+ * - items: lista de produtos
+ * - getTotalPrice(): valor total
+ * - getTotalItems(): quantidade total
+ * - clearCart(): limpar após compra finalizada
  */
 
 interface CartState {
