@@ -15,6 +15,8 @@ import Dashboard from "./pages/Dashboard";
 import Products from "./pages/Products";
 import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
+import Checkout from "./pages/Checkout"; // 💳 NOVO
+import OrderSuccess from "./pages/OrderSuccess"; // ✅ NOVO
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard";
@@ -148,6 +150,26 @@ export default function AppRoutes() {
         }
       />
 
+      {/* 💳 ROTA DO CHECKOUT - NOVO */}
+      <Route
+        path="/checkout"
+        element={
+          <PublicLayout>
+            <Checkout />
+          </PublicLayout>
+        }
+      />
+
+      {/* ✅ ROTA DE CONFIRMAÇÃO DO PEDIDO - NOVO */}
+      <Route
+        path="/order-success/:orderNumber"
+        element={
+          <PublicLayout>
+            <OrderSuccess />
+          </PublicLayout>
+        }
+      />
+
       <Route
         path="/dashboard"
         element={
@@ -175,7 +197,7 @@ export default function AppRoutes() {
         <Route path="products/new" element={<ProductFormPage />} />
         <Route path="products/edit/:id" element={<ProductFormPage />} />
         <Route path="categories" element={<AdminCategories />} />
-        {/* 📸 ROTA UPLOAD EM MASSA (NOVO) */}
+        {/* 📸 ROTA UPLOAD EM MASSA */}
         <Route path="bulk-images" element={<AdminBulkImages />} />
       </Route>
     </Routes>
