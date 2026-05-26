@@ -131,14 +131,15 @@ export default function Cart() {
                 </div>
               </div>
 
-              {/* Botão finalizar compra */}
-              <button
-                className="w-full bg-primary text-white px-6 py-4 rounded-lg hover:bg-red-700 transition font-bold text-lg shadow-lg"
+              {/* 💳 Botão finalizar compra - ATUALIZADO */}
+              <Link
+                to="/checkout"
+                className="w-full bg-primary text-white px-6 py-4 rounded-lg hover:bg-red-700 transition font-bold text-lg shadow-lg inline-flex items-center justify-center"
                 aria-label="Finalizar compra"
               >
                 <i className="fas fa-check-circle mr-2"></i>
                 Finalizar Compra
-              </button>
+              </Link>
 
               {/* Selos de segurança */}
               <div className="mt-6 pt-6 border-t">
@@ -191,7 +192,7 @@ export default function Cart() {
             </div>
           </div>
 
-          {/* Botões */}
+          {/* 💳 Botões - ATUALIZADO */}
           <div className="flex gap-2">
             <button
               onClick={handleClearCart}
@@ -201,13 +202,14 @@ export default function Cart() {
               <i className="fas fa-trash"></i>
             </button>
 
-            <button
-              className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-red-700 transition font-bold shadow-lg text-sm"
+            <Link
+              to="/checkout"
+              className="flex-1 bg-primary text-white px-4 py-3 rounded-lg hover:bg-red-700 transition font-bold shadow-lg text-sm inline-flex items-center justify-center"
               aria-label="Finalizar compra"
             >
               <i className="fas fa-check-circle mr-1"></i>
               Finalizar
-            </button>
+            </Link>
           </div>
         </div>
       </div>
