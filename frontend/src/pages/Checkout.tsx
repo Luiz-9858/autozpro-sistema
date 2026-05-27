@@ -50,13 +50,18 @@ export default function Checkout() {
     notes: "",
   });
 
-  // Redirecionar se carrinho vazio
+  // ✅ CORRIGIDO: Verificar se carrinho está vazio APENAS na montagem
   useEffect(() => {
     if (items.length === 0) {
       toast.error("Seu carrinho está vazio!");
-      navigate("/products");
+      // Usar setTimeout para permitir que a mensagem seja exibida
+      const timer = setTimeout(() => {
+        navigate("/products");
+      }, 1500);
+      return () => clearTimeout(timer);
     }
-  }, [items, navigate]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []); // ✅ Dependência vazia INTENCIONAL = executa apenas na montagem
 
   // Calcular frete quando CEP for preenchido
   useEffect(() => {
@@ -318,15 +323,23 @@ export default function Checkout() {
         throw new Error(data.message || "Erro ao criar pedido");
       }
 
+      // ✅ ORDEM CORRIGIDA: navigate ANTES de clearCart
+      const orderNumber = data.data.orderNumber;
+
+      // Limpar carrinho
+      clearCart();
+
       // Sucesso!
       toast.success("Pedido criado com sucesso!");
-      clearCart();
-      navigate(`/order-success/${data.data.orderNumber}`);
-    } catch (error) {
-      const errorMessage =
+
+      // Redirecionar (isso garante que não há race condition)
+      navigate(`/order-success/${orderNumber}`);
+    } catch (error: unknown) {
+      // ✅ TIPAGEM CORRIGIDA: usar unknown e instanceof
+      const message =
         error instanceof Error ? error.message : "Erro ao finalizar pedido";
       console.error("Erro ao finalizar pedido:", error);
-      toast.error(errorMessage);
+      toast.error(message);
     } finally {
       setLoading(false);
     }
