@@ -24,6 +24,7 @@ import AdminProducts from "./pages/AdminProducts";
 import AdminCategories from "./pages/AdminCategories";
 import ProductFormPage from "./pages/ProductFormPage";
 import AdminBulkImages from "./pages/AdminBulkImages";
+import AdminOrders from "./pages/AdminOrders";
 
 // ========================================
 // 🔒 COMPONENTE: ProtectedRoute
@@ -199,6 +200,7 @@ export default function AppRoutes() {
         <Route path="categories" element={<AdminCategories />} />
         {/* 📸 ROTA UPLOAD EM MASSA */}
         <Route path="bulk-images" element={<AdminBulkImages />} />
+        <Route path="orders" element={<AdminOrders />} />
       </Route>
     </Routes>
   );
