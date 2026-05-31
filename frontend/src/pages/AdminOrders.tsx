@@ -68,7 +68,12 @@ export default function AdminOrders() {
         url += `&status=${statusFilter}`;
       }
 
-      const response = await fetch(url);
+      const response = await fetch(url, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
       const data = await response.json();
 
       if (data.success) {
@@ -283,7 +288,7 @@ export default function AdminOrders() {
                         </span>
                       </td>
                       <td className="px-6 py-4 text-sm font-semibold text-gray-900">
-                        R$ {order.total.toFixed(2)}
+                        R$ {Number(order.total).toFixed(2)}
                       </td>
                       <td className="px-6 py-4 text-sm text-gray-600">
                         {new Date(order.createdAt).toLocaleDateString("pt-BR")}
@@ -488,7 +493,7 @@ export default function AdminOrders() {
                         <p className="text-gray-600">Qtd: {item.quantity}</p>
                       </div>
                       <p className="font-semibold">
-                        R$ {item.totalPrice.toFixed(2)}
+                        R$ {Number(item.totalPrice).toFixed(2)}
                       </p>
                     </div>
                   ))}
@@ -500,16 +505,16 @@ export default function AdminOrders() {
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span className="text-gray-600">Subtotal</span>
-                    <span>R$ {selectedOrder.subtotal.toFixed(2)}</span>
+                    <span>R$ {Number(selectedOrder.subtotal).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
                     <span className="text-gray-600">Frete</span>
-                    <span>R$ {selectedOrder.shipping.toFixed(2)}</span>
+                    <span>R$ {Number(selectedOrder.shipping).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between font-bold text-base">
                     <span>Total</span>
                     <span className="text-primary">
-                      R$ {selectedOrder.total.toFixed(2)}
+                      R$ {Number(selectedOrder.total).toFixed(2)}
                     </span>
                   </div>
                 </div>
