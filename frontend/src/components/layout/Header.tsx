@@ -12,6 +12,7 @@ export default function Header() {
   const [searchTerm, setSearchTerm] = useState("");
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mobileSearchOpen, setMobileSearchOpen] = useState(false);
+  const [adminMenuOpen, setAdminMenuOpen] = useState(false);
 
   useEffect(() => {
     let mounted = true;
@@ -78,6 +79,7 @@ export default function Header() {
 
   const handleLinkClick = () => {
     setMobileMenuOpen(false);
+    setAdminMenuOpen(false);
   };
 
   return (
@@ -184,21 +186,116 @@ export default function Header() {
             {/* Login/Logout - VISÍVEL EM TODOS */}
             {user ? (
               <>
-                <Link
-                  to="/dashboard"
-                  className="hidden sm:flex flex-col items-center text-gray-700 hover:text-primary transition-colors"
-                  onClick={handleLinkClick}
-                >
-                  <i className="fas fa-user text-xl mb-1"></i>
-                  <span className="text-xs hidden lg:block">Minha Conta</span>
-                </Link>
-                <button
-                  onClick={handleLogout}
-                  className="hidden sm:flex flex-col items-center text-gray-700 hover:text-primary transition-colors"
-                >
-                  <i className="fas fa-sign-out-alt text-xl mb-1"></i>
-                  <span className="text-xs hidden lg:block">Sair</span>
-                </button>
+                {/* ADMIN DROPDOWN - DESKTOP */}
+                {user && user.role === "admin" && (
+                  <div className="relative group hidden sm:flex flex-col items-center">
+                    <button
+                      onClick={() => setAdminMenuOpen(!adminMenuOpen)}
+                      className="flex items-center gap-1 text-gray-700 hover:text-primary transition-colors"
+                      aria-label="Menu admin"
+                    >
+                      <i className="fas fa-user text-xl mb-1"></i>
+                      <span className="text-xs hidden lg:block max-w-[100px] truncate">
+                        {user.name}
+                      </span>
+                      <i className="fas fa-chevron-down text-xs"></i>
+                    </button>
+
+                    {/* Dropdown Menu */}
+                    {adminMenuOpen && (
+                      <div className="absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-lg z-50 border border-gray-200">
+                        <div className="p-3 border-b border-gray-200">
+                          <p className="text-sm font-semibold text-gray-900">
+                            {user.name}
+                          </p>
+                          <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full inline-block mt-1">
+                            ADMIN
+                          </span>
+                        </div>
+
+                        <Link
+                          to="/dashboard"
+                          onClick={handleLinkClick}
+                          className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                        >
+                          <i className="fas fa-tachometer-alt text-primary w-4"></i>
+                          Dashboard
+                        </Link>
+
+                        <Link
+                          to="/products"
+                          onClick={handleLinkClick}
+                          className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors text-sm border-t border-gray-200"
+                        >
+                          <i className="fas fa-cog text-primary w-4"></i>
+                          Admin Panel
+                        </Link>
+
+                        <div className="px-4 py-2 text-xs font-semibold text-gray-500 uppercase bg-gray-50 border-t border-gray-200">
+                          Gerenciar
+                        </div>
+
+                        <Link
+                          to="/admin/products"
+                          onClick={handleLinkClick}
+                          className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                        >
+                          <i className="fas fa-box text-gray-600 w-4"></i>
+                          Produtos
+                        </Link>
+
+                        <Link
+                          to="/admin/categories"
+                          onClick={handleLinkClick}
+                          className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                        >
+                          <i className="fas fa-folder text-gray-600 w-4"></i>
+                          Categorias
+                        </Link>
+
+                        <Link
+                          to="/admin/orders"
+                          onClick={handleLinkClick}
+                          className="flex items-center gap-3 px-4 py-3 text-gray-700 hover:bg-gray-100 transition-colors text-sm"
+                        >
+                          <i className="fas fa-receipt text-gray-600 w-4"></i>
+                          Pedidos
+                        </Link>
+
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center gap-3 px-4 py-3 text-red-600 hover:bg-red-50 transition-colors text-sm border-t border-gray-200"
+                        >
+                          <i className="fas fa-sign-out-alt w-4"></i>
+                          Sair
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                )}
+
+                {/* USER NORMAL - DESKTOP */}
+                {user && user.role !== "admin" && (
+                  <>
+                    <Link
+                      to="/dashboard"
+                      className="hidden sm:flex flex-col items-center text-gray-700 hover:text-primary transition-colors"
+                      onClick={handleLinkClick}
+                    >
+                      <i className="fas fa-user text-xl mb-1"></i>
+                      <span className="text-xs hidden lg:block">
+                        Minha Conta
+                      </span>
+                    </Link>
+                    <button
+                      onClick={handleLogout}
+                      className="hidden sm:flex flex-col items-center text-gray-700 hover:text-primary transition-colors"
+                    >
+                      <i className="fas fa-sign-out-alt text-xl mb-1"></i>
+                      <span className="text-xs hidden lg:block">Sair</span>
+                    </button>
+                  </>
+                )}
               </>
             ) : (
               <Link
@@ -375,6 +472,47 @@ export default function Header() {
               >
                 <i className="fas fa-user-plus text-primary"></i>
                 <span className="font-medium">Criar Conta</span>
+              </Link>
+            </div>
+          )}
+
+          {/* ADMIN SECTION - MOBILE */}
+          {user && user.role === "admin" && (
+            <div className="mb-4 pb-4 border-b border-gray-200">
+              <div className="flex items-center gap-2 mb-3 px-4">
+                <span className="text-xs font-semibold text-gray-500 uppercase">
+                  Admin
+                </span>
+                <span className="text-xs bg-red-100 text-red-800 px-2 py-1 rounded-full">
+                  ADMIN
+                </span>
+              </div>
+
+              <Link
+                to="/admin/products"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <i className="fas fa-box text-primary"></i>
+                <span className="font-medium">Produtos</span>
+              </Link>
+
+              <Link
+                to="/admin/categories"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <i className="fas fa-folder text-primary"></i>
+                <span className="font-medium">Categorias</span>
+              </Link>
+
+              <Link
+                to="/admin/orders"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <i className="fas fa-receipt text-primary"></i>
+                <span className="font-medium">Pedidos</span>
               </Link>
             </div>
           )}
