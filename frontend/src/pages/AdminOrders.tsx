@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import toast from "react-hot-toast";
+import { Link } from "react-router-dom";
 
 interface OrderItem {
   id: string;
@@ -166,9 +167,23 @@ export default function AdminOrders() {
   return (
     <div className="p-6">
       {/* Header */}
-      <div className="mb-6">
+      {/*  <div className="mb-6">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Pedidos</h1>
         <p className="text-gray-600">Gerencie todos os pedidos da loja</p>
+      </div>*/}
+      {/* Header com Botão Voltar */}
+      <div className="mb-6 flex items-center gap-4">
+        <Link
+          to="/admin"
+          className="flex items-center gap-2 text-primary hover:text-red-700 transition-colors text-sm lg:text-base"
+        >
+          <i className="fas fa-arrow-left"></i>
+          <span>Voltar</span>
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 mb-2">Pedidos</h1>
+            <p className="text-gray-600">Gerencie todos os pedidos da loja</p>
+          </div>
+        </Link>
       </div>
 
       {/* Filtros */}
