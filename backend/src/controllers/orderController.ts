@@ -183,7 +183,7 @@ export const createOrder = async (req: Request, res: Response) => {
       },
     });
 
-    // Decrementar estoque
+    // Decrementar estoque automaticamente -- DECREMENTO AUTOMÁTICO FUNCIONANDO! (1/06/2026)
     for (const item of items) {
       await prisma.product.update({
         where: { id: item.productId },
