@@ -1,5 +1,11 @@
 import { Request, Response } from "express";
 import { PrismaClient } from "@prisma/client";
+import {
+  sendOrderConfirmationEmail,
+  sendPaymentConfirmedEmail,
+  sendOrderShippedEmail,
+  sendOrderDeliveredEmail,
+} from "../services/emailService";
 
 const prisma = new PrismaClient();
 
@@ -194,6 +200,25 @@ export const createOrder = async (req: Request, res: Response) => {
         },
       });
     }
+
+    // 📧 Enviar email de confirmação
+    await sendOrderConfirmationEmail({
+      orderNumber: order.orderNumber,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      items: order.items.map((item) => ({
+        productName: item.productName,
+        quantity: item.quantity,
+        totalPrice: Number(item.totalPrice),
+      })),
+      subtotal: Number(order.subtotal),
+      shipping: Number(order.shipping),
+      total: Number(order.total),
+      street: order.street,
+      number: order.number,
+      city: order.city,
+      state: order.state,
+    });
 
     res.status(201).json({
       success: true,
@@ -440,6 +465,33 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
         items: true,
       },
     });
+
+    // 📧 Enviar email baseado no novo status
+    if (status === "PAID") {
+      await sendPaymentConfirmedEmail({
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        total: Number(order.total),
+      });
+    }
+
+    if (status === "SHIPPED") {
+      await sendOrderShippedEmail({
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+        trackingCode: order.trackingCode || undefined,
+      });
+    }
+
+    if (status === "DELIVERED") {
+      await sendOrderDeliveredEmail({
+        orderNumber: order.orderNumber,
+        customerName: order.customerName,
+        customerEmail: order.customerEmail,
+      });
+    }
 
     res.json({
       success: true,
