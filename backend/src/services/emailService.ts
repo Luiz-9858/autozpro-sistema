@@ -33,6 +33,15 @@ export const sendOrderConfirmationEmail = async (orderData: {
   state: string;
 }) => {
   try {
+    console.log("🔐 DEBUG SMTP:");
+    console.log("Host:", process.env.SMTP_HOST);
+    console.log("Port:", process.env.SMTP_PORT);
+    console.log("User:", process.env.SMTP_USER);
+    console.log(
+      "Pass (primeiros 5 chars):",
+      process.env.SMTP_PASS?.substring(0, 5),
+    );
+    console.log("From:", process.env.SMTP_FROM);
     const itemsHTML = orderData.items
       .map(
         (item) => `
