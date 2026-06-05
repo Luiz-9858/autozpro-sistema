@@ -25,9 +25,10 @@
     "cloudinary": "^2.9.0",
     "cors": "^2.8.5",
     "csv-parse": "^6.1.0",
-    "dotenv": "^17.2.3",
+    "dotenv": "^17.4.2",
     "express": "^5.1.0",
-    "multer": "^2.1.1"
+    "multer": "^2.1.1",
+    "nodemailer": "^8.0.10"
   },
   "devDependencies": {
     "@types/bcrypt": "^6.0.0",
@@ -35,6 +36,7 @@
     "@types/express": "^5.0.5",
     "@types/multer": "^2.1.0",
     "@types/node": "^24.10.4",
+    "@types/nodemailer": "^8.0.0",
     "nodemon": "^3.1.11",
     "prisma": "^5.22.0",
     "ts-node": "^10.9.2",
