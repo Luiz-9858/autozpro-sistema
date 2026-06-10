@@ -1,11 +1,15 @@
 import { Request, Response } from "express";
-import { PrismaClient } from "@prisma/client";
+import { PrismaClient, Prisma } from "@prisma/client";
 import {
   sendOrderConfirmationEmail,
   sendPaymentConfirmedEmail,
   sendOrderShippedEmail,
   sendOrderDeliveredEmail,
 } from "../services/emailService";
+import {
+  createCheckoutSession,
+  getCheckoutSession,
+} from "../services/stripeService";
 
 const prisma = new PrismaClient();
 
@@ -504,5 +508,243 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
       success: false,
       message: "Erro ao atualizar status",
     });
+  }
+};
+
+// ========================================
+// 💳 CRIAR SESSÃO STRIPE CHECKOUT
+// ========================================
+export const createStripeCheckout = async (req: Request, res: Response) => {
+  try {
+    const {
+      customerName,
+      customerEmail,
+      customerPhone,
+      customerDocument,
+      zipCode,
+      street,
+      number,
+      complement,
+      neighborhood,
+      city,
+      state,
+      items,
+      subtotal,
+      shipping,
+      total,
+    } = req.body;
+
+    // Validação básica
+    if (!items || items.length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: "Carrinho vazio!",
+      });
+    }
+
+    if (!customerEmail || !customerName) {
+      return res.status(400).json({
+        success: false,
+        message: "Email e nome são obrigatórios!",
+      });
+    }
+
+    // Validar estoque
+    const prisma = new PrismaClient();
+
+    for (const item of items) {
+      const product = await prisma.product.findUnique({
+        where: { id: item.productId },
+      });
+
+      if (!product) {
+        return res.status(404).json({
+          success: false,
+          message: `Produto ${item.productId} não encontrado`,
+        });
+      }
+
+      if (product.stock < item.quantity) {
+        return res.status(400).json({
+          success: false,
+          message: `Estoque insuficiente para ${product.name}. Disponível: ${product.stock}`,
+        });
+      }
+    }
+
+    // Gerar número do pedido
+    const lastOrder = await prisma.order.findFirst({
+      orderBy: { createdAt: "desc" },
+      where: {
+        orderNumber: {
+          startsWith: `AZ-${new Date().getFullYear()}-`,
+        },
+      },
+    });
+
+    const lastNumber = lastOrder
+      ? parseInt(lastOrder.orderNumber.split("-")[2])
+      : 0;
+    const orderNumber = `AZ-${new Date().getFullYear()}-${String(lastNumber + 1).padStart(5, "0")}`;
+
+    // Criar pedido com status PENDING
+    const order = await prisma.order.create({
+      data: {
+        orderNumber,
+        customerName,
+        customerEmail,
+        customerPhone,
+        customerDocument,
+        zipCode,
+        street,
+        number,
+        complement,
+        neighborhood,
+        city,
+        state,
+        subtotal: new Prisma.Decimal(subtotal),
+        shipping: new Prisma.Decimal(shipping),
+        total: new Prisma.Decimal(total),
+        status: "PENDING",
+        items: {
+          create: items.map((item: any) => ({
+            productId: item.productId,
+            productName: item.productName,
+            productSku: item.productSku,
+            productImage: item.productImage,
+            quantity: item.quantity,
+            unitPrice: new Prisma.Decimal(item.unitPrice),
+            totalPrice: new Prisma.Decimal(item.totalPrice),
+          })),
+        },
+      },
+      include: { items: true },
+    });
+
+    // Criar sessão Stripe
+    const stripeSession = await createCheckoutSession({
+      orderNumber: order.orderNumber,
+      customerEmail: order.customerEmail,
+      items: items.map((item: any) => ({
+        productId: item.productId,
+        productName: item.productName,
+        quantity: item.quantity,
+        unitPrice: Number(item.unitPrice),
+      })),
+      subtotal: Number(subtotal),
+      shipping: Number(shipping),
+      total: Number(total),
+    });
+
+    if (!stripeSession.success) {
+      // Se falhar, deletar pedido
+      await prisma.order.delete({
+        where: { id: order.id },
+      });
+
+      return res.status(400).json({
+        success: false,
+        message: "Erro ao criar sessão de pagamento",
+      });
+    }
+
+    // 📧 Enviar email de confirmação
+    await sendOrderConfirmationEmail({
+      orderNumber: order.orderNumber,
+      customerName: order.customerName,
+      customerEmail: order.customerEmail,
+      items: order.items.map((item) => ({
+        productName: item.productName,
+        quantity: item.quantity,
+        totalPrice: Number(item.totalPrice),
+      })),
+      subtotal: Number(order.subtotal),
+      shipping: Number(order.shipping),
+      total: Number(order.total),
+      street: order.street,
+      number: order.number,
+      city: order.city,
+      state: order.state,
+    });
+
+    res.json({
+      success: true,
+      data: {
+        orderId: order.id,
+        orderNumber: order.orderNumber,
+        sessionId: stripeSession.sessionId,
+        clientSecret: stripeSession.clientSecret,
+      },
+      message: "Pedido criado! Redirecionando para pagamento...",
+    });
+  } catch (error) {
+    console.error("❌ Erro ao criar checkout Stripe:", error);
+    res.status(500).json({
+      success: false,
+      message: error instanceof Error ? error.message : "Erro desconhecido",
+    });
+  }
+};
+
+// ========================================
+// 🪝 WEBHOOK DO STRIPE
+// ========================================
+export const handleStripeWebhook = async (req: Request, res: Response) => {
+  try {
+    const { event } = req.body;
+
+    console.log("🪝 Webhook recebido:", event.type);
+
+    if (event.type === "checkout.session.completed") {
+      const session = event.data.object;
+      const orderNumber = session.metadata?.orderNumber;
+
+      if (!orderNumber) {
+        console.error("❌ orderNumber não encontrado no metadata");
+        return res.status(400).json({ success: false });
+      }
+
+      // Buscar e atualizar pedido
+      const prisma = new PrismaClient();
+
+      const order = await prisma.order.findUnique({
+        where: { orderNumber },
+        include: { items: true },
+      });
+
+      if (!order) {
+        console.error(`❌ Pedido ${orderNumber} não encontrado`);
+        return res.status(404).json({ success: false });
+      }
+
+      // Atualizar status para PAID
+      const updatedOrder = await prisma.order.update({
+        where: { id: order.id },
+        data: {
+          status: "PAID",
+          paymentMethod: "CREDIT_CARD",
+          paymentId: session.payment_intent,
+          paidAt: new Date(),
+        },
+        include: { items: true },
+      });
+
+      console.log(`✅ Pedido ${orderNumber} marcado como PAID`);
+
+      // 📧 Enviar email de pagamento confirmado
+      await sendPaymentConfirmedEmail({
+        orderNumber: updatedOrder.orderNumber,
+        customerName: updatedOrder.customerName,
+        customerEmail: updatedOrder.customerEmail,
+        total: Number(updatedOrder.total),
+      });
+
+      return res.json({ success: true, message: "Webhook processado" });
+    }
+
+    res.json({ success: true, message: "Evento não processado" });
+  } catch (error) {
+    console.error("❌ Erro ao processar webhook:", error);
+    res.status(500).json({ success: false, error });
   }
 };
