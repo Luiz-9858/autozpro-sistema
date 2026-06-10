@@ -1,6 +1,8 @@
 import { Router } from "express";
 import {
   createOrder,
+  createStripeCheckout,
+  handleStripeWebhook,
   getAllOrders,
   getOrderById,
   getOrderByNumber,
@@ -26,6 +28,8 @@ const router = Router();
  * Público - não precisa estar logado
  */
 router.post("/", createOrder);
+router.post("/stripe-checkout", createStripeCheckout);
+router.post("/stripe-webhook", handleStripeWebhook);
 
 /**
  * GET /api/orders/number/:orderNumber
