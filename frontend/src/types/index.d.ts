@@ -65,6 +65,8 @@ export interface Category {
 export interface CartItem {
   id: string; // ID do produto
   name: string;
+  sku: string; // SKU do produto
+  image: string; // URL da imagem
   price: number;
   salePrice: number | null;
   imageUrl: string | null;
