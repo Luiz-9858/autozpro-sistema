@@ -73,6 +73,7 @@ export const createCheckoutSession = async (orderData: {
       success: true,
       sessionId: session.id,
       clientSecret: session.client_secret,
+      url: session.url,
     };
   } catch (error) {
     console.error("❌ Erro ao criar sessão Stripe:", error);
