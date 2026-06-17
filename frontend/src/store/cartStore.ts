@@ -54,6 +54,8 @@ export const useCartStore = create<CartState>()(
               item.id === product.id
                 ? {
                     ...item,
+                    sku: product.sku || "",
+                    image: product.imageUrl || "",
                     stock: product.stock,
                     price: product.price,
                     salePrice: product.salePrice,
@@ -103,6 +105,8 @@ export const useCartStore = create<CartState>()(
           const newItem: CartItem = {
             id: product.id,
             name: product.name,
+            sku: product.sku || "",
+            image: product.imageUrl || "",
             price: product.price,
             salePrice: product.salePrice,
             imageUrl: product.imageUrl,
