@@ -29,10 +29,9 @@ interface CheckoutFormData {
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, getTotalPrice, clearCart } = useCartStore();
-
-  const [loading, setLoading] = useState(false);
   const [searchingCep, setSearchingCep] = useState(false);
   const [shipping, setShipping] = useState(0);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const [formData, setFormData] = useState<CheckoutFormData>({
     customerName: "",
@@ -199,149 +198,83 @@ export default function Checkout() {
     setFormData((prev) => ({ ...prev, customerDocument: value }));
   };
 
-  const validateForm = () => {
-    // Cliente
-    if (!formData.customerName.trim()) {
-      toast.error("Nome completo é obrigatório");
-      return false;
-    }
-    if (
-      !formData.customerEmail.trim() ||
-      !formData.customerEmail.includes("@")
-    ) {
-      toast.error("E-mail válido é obrigatório");
-      return false;
-    }
-    if (formData.customerPhone.replace(/\D/g, "").length < 10) {
-      toast.error("Telefone válido é obrigatório");
-      return false;
-    }
-    if (formData.customerDocument.replace(/\D/g, "").length < 11) {
-      toast.error("CPF/CNPJ válido é obrigatório");
-      return false;
-    }
-
-    // Endereço
-    if (formData.zipCode.replace(/\D/g, "").length !== 8) {
-      toast.error("CEP válido é obrigatório");
-      return false;
-    }
-    if (!formData.street.trim()) {
-      toast.error("Rua é obrigatória");
-      return false;
-    }
-    if (!formData.number.trim()) {
-      toast.error("Número é obrigatório");
-      return false;
-    }
-    if (!formData.neighborhood.trim()) {
-      toast.error("Bairro é obrigatório");
-      return false;
-    }
-    if (!formData.city.trim()) {
-      toast.error("Cidade é obrigatória");
-      return false;
-    }
-    if (!formData.state.trim()) {
-      toast.error("Estado é obrigatório");
-      return false;
-    }
-
-    // Pagamento
-    if (!formData.paymentMethod) {
-      toast.error("Selecione a forma de pagamento");
-      return false;
-    }
-
-    return true;
-  };
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!validateForm()) return;
+    setIsProcessing(true);
 
     try {
-      setLoading(true);
+      // Validar dados
+      if (!formData.customerName || !formData.customerEmail) {
+        toast.error("Preencha todos os dados obrigatórios!");
+        setIsProcessing(false);
+        return;
+      }
 
-      const subtotal = getTotalPrice();
-      const total = subtotal + shipping;
+      if (items.length === 0) {
+        toast.error("Seu carrinho está vazio!");
+        setIsProcessing(false);
+        return;
+      }
 
-      // Preparar itens do pedido
-      const orderItems = items.map((item) => ({
-        productId: item.id,
-        quantity: item.quantity,
-        unitPrice: item.salePrice || item.price,
-        totalPrice: (item.salePrice || item.price) * item.quantity,
-      }));
+      // Preparar dados do pedido
+      const orderData = {
+        customerName: formData.customerName,
+        customerEmail: formData.customerEmail,
+        customerPhone: formData.customerPhone,
+        customerDocument: formData.customerDocument,
+        zipCode: formData.zipCode,
+        street: formData.street,
+        number: formData.number,
+        complement: formData.complement,
+        neighborhood: formData.neighborhood,
+        city: formData.city,
+        state: formData.state,
+        items: items.map((item) => ({
+          productId: item.id,
+          productName: item.name,
+          productSku: item.sku,
+          productImage: item.image,
+          quantity: item.quantity,
+          unitPrice: item.price,
+          totalPrice: item.price * item.quantity,
+        })),
+        subtotal: getTotalPrice(),
+        shipping: shipping,
+        total: getTotalPrice() + shipping,
+      };
 
-      // Criar pedido
+      // Chamar rota de checkout Stripe
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || "http://localhost:3001"}/api/orders`,
+        `${import.meta.env.VITE_API_URL}/api/orders/stripe-checkout`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
-          body: JSON.stringify({
-            // Cliente
-            customerName: formData.customerName,
-            customerEmail: formData.customerEmail,
-            customerPhone: formData.customerPhone,
-            customerDocument: formData.customerDocument,
-
-            // Endereço
-            zipCode: formData.zipCode.replace(/\D/g, ""),
-            street: formData.street,
-            number: formData.number,
-            complement: formData.complement || null,
-            neighborhood: formData.neighborhood,
-            city: formData.city,
-            state: formData.state,
-
-            // Valores
-            subtotal,
-            shipping,
-            discount: 0,
-            total,
-
-            // Pagamento
-            paymentMethod: formData.paymentMethod,
-
-            // Observações
-            notes: formData.notes || null,
-
-            // Itens
-            items: orderItems,
-          }),
+          body: JSON.stringify(orderData),
         },
       );
 
       const data = await response.json();
 
-      if (!response.ok || !data.success) {
-        throw new Error(data.message || "Erro ao criar pedido");
+      if (!data.success) {
+        toast.error(data.message || "Erro ao criar sessão de pagamento");
+        setIsProcessing(false);
+        return;
       }
 
-      // ✅ ORDEM CORRIGIDA: navigate ANTES de clearCart
-      const orderNumber = data.data.orderNumber;
-
-      // Limpar carrinho
-      clearCart();
-
-      // Sucesso!
-      toast.success("Pedido criado com sucesso!");
-
-      // Redirecionar (isso garante que não há race condition)
-      navigate(`/order-success/${orderNumber}`);
+      // Redirecionar direto para URL do Stripe
+      if (data.data.url) {
+        clearCart();
+        toast.success("Redirecionando para pagamento...");
+        window.location.href = data.data.url;
+        return;
+      }
     } catch (error: unknown) {
-      // ✅ TIPAGEM CORRIGIDA: usar unknown e instanceof
       const message =
-        error instanceof Error ? error.message : "Erro ao finalizar pedido";
-      console.error("Erro ao finalizar pedido:", error);
+        error instanceof Error ? error.message : "Erro ao processar pedido";
       toast.error(message);
-    } finally {
-      setLoading(false);
+      setIsProcessing(false);
     }
   };
 
@@ -707,10 +640,10 @@ export default function Checkout() {
                 {/* Botão Finalizar */}
                 <button
                   type="submit"
-                  disabled={loading}
+                  disabled={isProcessing}
                   className="w-full bg-primary text-white py-3 rounded-lg font-semibold hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed mt-6"
                 >
-                  {loading ? (
+                  {isProcessing ? (
                     <>
                       <i className="fas fa-spinner fa-spin mr-2"></i>
                       Processando...
