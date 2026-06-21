@@ -674,6 +674,7 @@ export const createStripeCheckout = async (req: Request, res: Response) => {
         orderNumber: order.orderNumber,
         sessionId: stripeSession.sessionId,
         clientSecret: stripeSession.clientSecret,
+        url: stripeSession.url,
       },
       message: "Pedido criado! Redirecionando para pagamento...",
     });
