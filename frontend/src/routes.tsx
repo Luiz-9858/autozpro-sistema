@@ -25,6 +25,7 @@ import AdminCategories from "./pages/AdminCategories";
 import ProductFormPage from "./pages/ProductFormPage";
 import AdminBulkImages from "./pages/AdminBulkImages";
 import AdminOrders from "./pages/AdminOrders";
+import MyOrders from "./pages/MyOrders";
 
 // ========================================
 // 🔒 COMPONENTE: ProtectedRoute
@@ -127,6 +128,16 @@ export default function AppRoutes() {
         element={
           <PublicLayout>
             <Products />
+          </PublicLayout>
+        }
+      />
+
+      {/* User Routes */}
+      <Route
+        path="/my-orders"
+        element={
+          <PublicLayout>
+            <MyOrders />
           </PublicLayout>
         }
       />
