@@ -446,6 +446,15 @@ export default function Header() {
                 <i className="fas fa-tachometer-alt text-primary"></i>
                 <span className="font-medium">Minha Conta</span>
               </Link>
+
+              <Link
+                to="/my-orders"
+                onClick={handleLinkClick}
+                className="flex items-center gap-3 py-3 px-4 rounded-lg hover:bg-gray-100 transition-colors"
+              >
+                <i className="fas fa-box text-primary"></i>
+                <span className="font-medium">Meus Pedidos</span>
+              </Link>
               <Link
                 to="/favorites"
                 onClick={handleLinkClick}
