@@ -169,7 +169,7 @@ export const sendOrderConfirmationEmail = async (orderData: {
               <div class="section">
                 <p style="margin: 0; font-size: 14px;">
                   📞 Dúvidas? Entre em contato:<br>
-                  <strong>(14) 3277-2266</strong> | support@autozpro.com.br<br>
+                  <strong>(14) 3277-2266</strong> | support@b77autoparts.com.br<br>
                   Atendimento: Segunda a Sexta, 08h às 18h
                 </p>
               </div>
