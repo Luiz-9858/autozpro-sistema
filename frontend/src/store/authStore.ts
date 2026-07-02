@@ -185,3 +185,5 @@ export const useAuthStore = create<AuthState>((set) => ({
   // 🧹 LIMPAR ERRO
   clearError: () => set({ error: null }),
 }));
+
+useAuthStore.getState().checkAuth();
