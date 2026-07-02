@@ -30,6 +30,7 @@ const router = Router();
 router.post("/", createOrder);
 router.post("/stripe-checkout", createStripeCheckout);
 router.post("/stripe-webhook", handleStripeWebhook);
+router.get("/my-orders", authMiddleware, getMyOrders);
 
 /**
  * GET /api/orders/number/:orderNumber
