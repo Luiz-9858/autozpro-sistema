@@ -27,7 +27,7 @@ const router = Router();
  * Criar novo pedido (checkout)
  * Público - não precisa estar logado
  */
-router.post("/", createOrder);
+router.post("/", authMiddleware, createOrder);
 router.post("/stripe-checkout", createStripeCheckout);
 router.post("/stripe-webhook", handleStripeWebhook);
 router.get("/my-orders", authMiddleware, getMyOrders);
