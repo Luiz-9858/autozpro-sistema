@@ -23,6 +23,8 @@ const prisma = new PrismaClient();
 // ========================================
 export const createOrder = async (req: Request, res: Response) => {
   try {
+    const userId = (req as any).user?.id;
+
     const {
       // Cliente
       customerName,
@@ -384,12 +386,10 @@ export const getOrderByNumber = async (req: Request, res: Response) => {
   }
 };
 
-// ========================================
-// 👤 BUSCAR PEDIDOS DO USUÁRIO
-// ========================================
+// 📖 BUSCAR MEUS PEDIDOS (usuário logado)
 export const getMyOrders = async (req: Request, res: Response) => {
   try {
-    const userId = (req as any).user?.id;
+    const userId = (req as any).user?.id; // Vem do middleware de autenticação
 
     if (!userId) {
       return res.status(401).json({
@@ -398,29 +398,33 @@ export const getMyOrders = async (req: Request, res: Response) => {
       });
     }
 
+    console.log(`📖 Buscando pedidos do usuário: ${userId}`);
+
     const orders = await prisma.order.findMany({
-      where: { userId },
+      where: {
+        userId: userId,
+      },
+      include: {
+        items: true,
+      },
       orderBy: {
         createdAt: "desc",
       },
-      include: {
-        items: {
-          include: {
-            product: true,
-          },
-        },
-      },
     });
+
+    console.log(`✅ ${orders.length} pedidos encontrados`);
 
     res.json({
       success: true,
       data: orders,
+      message: "Pedidos encontrados com sucesso",
     });
   } catch (error) {
-    console.error("❌ Erro ao buscar pedidos do usuário:", error);
+    console.error("❌ Erro ao buscar pedidos:", error);
     res.status(500).json({
       success: false,
       message: "Erro ao buscar pedidos",
+      error: error instanceof Error ? error.message : "Desconhecido",
     });
   }
 };
