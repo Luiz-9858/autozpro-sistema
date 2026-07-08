@@ -18,60 +18,20 @@ const router = Router();
  * 🛒 ROTAS DE PEDIDOS
  */
 
-// ========================================
-// 🔓 ROTAS PÚBLICAS
-// ========================================
-
-/**
- * POST /api/orders
- * Criar novo pedido (checkout)
- * Público - não precisa estar logado
- */
+// POST routes
 router.post("/", authMiddleware, createOrder);
 router.post("/stripe-checkout", createStripeCheckout);
 router.post("/stripe-webhook", handleStripeWebhook);
-router.get("/my-orders", authMiddleware, getMyOrders);
 
-/**
- * GET /api/orders/number/:orderNumber
- * Buscar pedido por número (para rastreamento)
- * Público - cliente pode rastrear sem login
- */
+// GET routes (específicas PRIMEIRO)
+router.get("/my-orders", authMiddleware, getMyOrders);
 router.get("/number/:orderNumber", getOrderByNumber);
 
-// ========================================
-// 🔐 ROTAS PROTEGIDAS (USUÁRIO LOGADO)
-// ========================================
-
-/**
- * GET /api/orders/my-orders
- * Listar pedidos do usuário logado
- */
-router.get("/my-orders", authMiddleware, getMyOrders);
-
-// ========================================
-// 🔒 ROTAS ADMIN
-// ========================================
-
-/**
- * GET /api/orders
- * Listar todos os pedidos (com paginação e filtros)
- * Admin apenas
- */
+// GET routes (genéricas - admin)
 router.get("/", authMiddleware, adminMiddleware, getAllOrders);
-
-/**
- * GET /api/orders/:id
- * Buscar pedido por ID
- * Admin apenas
- */
 router.get("/:id", authMiddleware, adminMiddleware, getOrderById);
 
-/**
- * PATCH /api/orders/:id/status
- * Atualizar status do pedido
- * Admin apenas
- */
+// PATCH routes
 router.patch("/:id/status", authMiddleware, adminMiddleware, updateOrderStatus);
 
 export default router;
