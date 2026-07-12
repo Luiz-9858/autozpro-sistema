@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useCartStore } from "../store/cartStore";
 import toast from "react-hot-toast";
+import { useAuthStore } from "../store/authStore";
 
 interface CheckoutFormData {
   // Cliente
@@ -29,6 +30,7 @@ interface CheckoutFormData {
 export default function Checkout() {
   const navigate = useNavigate();
   const { items, getTotalPrice, clearCart } = useCartStore();
+  const { token } = useAuthStore();
   const [searchingCep, setSearchingCep] = useState(false);
   const [shipping, setShipping] = useState(0);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -250,6 +252,7 @@ export default function Checkout() {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
           },
           body: JSON.stringify(orderData),
         },
