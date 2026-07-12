@@ -43,6 +43,8 @@ model User {
   updatedAt DateTime @updatedAt
   orders    Order[]
 
+  reviews   Review[]
+
   @@map("users")
 }
 
@@ -77,6 +79,8 @@ model Product {
 
   categoryId String
   category   Category @relation(fields: [categoryId], references: [id])
+
+  reviews Review[]
 
   orderItems OrderItem[]
   vehicles   ProductVehicle[]
@@ -220,4 +224,29 @@ model OrderItem {
   @@index([productId])
 
   @@map("order_items")
+}
+
+// ========================================
+// ⭐ REVIEWS/AVALIAÇÕES
+// ========================================
+model Review {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  rating    Int      @default(5)
+  title     String   @db.VarChar(100)
+  comment   String   @db.Text
+  verified  Boolean  @default(false)
+  
+  // Relacionamentos
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  // Timestamps
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, productId])
+  @@index([productId])
+  @@index([userId])
 }
