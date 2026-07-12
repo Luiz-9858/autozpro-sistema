@@ -38,6 +38,7 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log("🔐 [LOGIN] Tentando fazer login com:", formData.email);
 
     if (!formData.email || !formData.password) {
       toast.error("Preencha todos os campos");
@@ -45,7 +46,9 @@ export default function Login() {
     }
 
     try {
+      console.log("📡 [LOGIN] Chamando função login...");
       await login(formData.email, formData.password);
+      console.log("✅ [LOGIN] Login bem-sucedido!");
 
       // Aguardar state atualizar
       await new Promise((resolve) => setTimeout(resolve, 100));
@@ -55,6 +58,7 @@ export default function Login() {
       const userStr = localStorage.getItem("user");
 
       if (!token || !userStr) {
+        console.error("❌ [LOGIN] Erro ao fazer login. Tente novamente.");
         toast.error("Erro ao fazer login. Tente novamente.");
         return;
       }
