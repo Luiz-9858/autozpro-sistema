@@ -23,7 +23,12 @@ const prisma = new PrismaClient();
 // ========================================
 export const createOrder = async (req: Request, res: Response) => {
   try {
+    console.log("🔍 [createOrder] Iniciando...");
+    console.log("   req.user:", (req as any).user);
+
     const userId = (req as any).user?.id;
+
+    console.log("   userId extraído:", userId);
 
     const {
       // Cliente
@@ -389,7 +394,12 @@ export const getOrderByNumber = async (req: Request, res: Response) => {
 // 📖 BUSCAR MEUS PEDIDOS (usuário logado)
 export const getMyOrders = async (req: Request, res: Response) => {
   try {
+    console.log("🔍 [getMyOrders] Iniciando busca...");
+    console.log("   req.user:", (req as any).user);
+
     const userId = (req as any).user?.id; // Vem do middleware de autenticação
+
+    console.log("   userId extraído:", userId);
 
     if (!userId) {
       return res.status(401).json({
@@ -520,6 +530,8 @@ export const updateOrderStatus = async (req: Request, res: Response) => {
 // ========================================
 export const createStripeCheckout = async (req: Request, res: Response) => {
   try {
+    const userId = (req as any).user?.id;
+
     const {
       customerName,
       customerEmail,
@@ -595,6 +607,7 @@ export const createStripeCheckout = async (req: Request, res: Response) => {
     const order = await prisma.order.create({
       data: {
         orderNumber,
+        userId: (req as any).user?.id || null,
         customerName,
         customerEmail,
         customerPhone,
