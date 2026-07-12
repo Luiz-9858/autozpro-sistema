@@ -20,7 +20,7 @@ const router = Router();
 
 // POST routes
 router.post("/", authMiddleware, createOrder);
-router.post("/stripe-checkout", createStripeCheckout);
+router.post("/stripe-checkout", authMiddleware, createStripeCheckout);
 router.post("/stripe-webhook", handleStripeWebhook);
 
 // GET routes (específicas PRIMEIRO)
