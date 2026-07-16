@@ -10,6 +10,7 @@ import adminRoutes from "./routes/adminRoutes";
 import uploadRoutes from "./routes/uploadRoutes";
 import bulkRoutes from "./routes/bulkRoutes";
 import orderRoutes from "./routes/orderRoutes";
+import reviewRoutes from "./routes/reviewRoutes"; // ← ADICIONAR
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -61,6 +62,8 @@ app.use("/api/vehicles", vehicleRoutes);
 
 // Rotas de pedidos
 app.use("/api/orders", orderRoutes);
+
+app.use("/api/reviews", reviewRoutes); // ← ADICIONAR
 
 // ========================================
 // 🚀 INICIAR SERVIDOR
