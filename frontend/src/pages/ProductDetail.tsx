@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import ProductReviews from "../sections/ProductReviews";
 import { productService } from "../services/api";
 import type { Product } from "../services/api";
 import AddToCartButton from "../components/AddToCartButton";
@@ -588,6 +589,9 @@ export default function ProductDetail() {
             </div>
           </div>
         </div>
+
+        {/* Seção de Avaliações */}
+        <ProductReviews productId={product.id} />
       </div>
     </div>
   );
