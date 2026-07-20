@@ -4,6 +4,7 @@ import { useState, useEffect } from "react";
 import { categoryService } from "../../services/api";
 import type { Category } from "../../services/api";
 import CartBadge from "../CartBadge";
+import UserMenu from "../UserMenu";
 
 export default function Header() {
   const { user, logout } = useAuthStore();
@@ -275,27 +276,8 @@ export default function Header() {
                 )}
 
                 {/* USER NORMAL - DESKTOP */}
-                {user && user.role !== "admin" && (
-                  <>
-                    <Link
-                      to="/dashboard"
-                      className="hidden sm:flex flex-col items-center text-gray-700 hover:text-primary transition-colors"
-                      onClick={handleLinkClick}
-                    >
-                      <i className="fas fa-user text-xl mb-1"></i>
-                      <span className="text-xs hidden lg:block">
-                        Minha Conta
-                      </span>
-                    </Link>
-                    <button
-                      onClick={handleLogout}
-                      className="hidden sm:flex flex-col items-center text-gray-700 hover:text-primary transition-colors"
-                    >
-                      <i className="fas fa-sign-out-alt text-xl mb-1"></i>
-                      <span className="text-xs hidden lg:block">Sair</span>
-                    </button>
-                  </>
-                )}
+
+                {user && user.role !== "admin" && <UserMenu />}
               </>
             ) : (
               <Link
