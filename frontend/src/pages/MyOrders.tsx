@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { useAuthStore } from "../store/authStore";
-import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
 
 interface OrderItem {
@@ -52,7 +52,6 @@ interface Order {
 
 export default function MyOrders() {
   const { user, token } = useAuthStore();
-  const navigate = useNavigate();
 
   const [orders, setOrders] = useState<Order[]>([]);
   const [loading, setLoading] = useState(true);
@@ -63,18 +62,6 @@ export default function MyOrders() {
   const [showModal, setShowModal] = useState(false);
 
   const itemsPerPage = 10;
-
-  // Verificar autenticação
-  useEffect(() => {
-    console.log("🔍 DEBUG MyOrders:");
-    console.log("   user:", user);
-    console.log("   token:", token);
-
-    if (user === null || !token) {
-      toast.error("Você precisa estar logado para ver seus pedidos");
-      navigate("/login");
-    }
-  }, [user, token, navigate]);
 
   // Buscar pedidos
   const fetchOrders = async () => {
@@ -114,7 +101,7 @@ export default function MyOrders() {
       fetchOrders();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [user, token]);
 
   // Filtrar e buscar
   const filteredOrders = orders.filter((order) => {
@@ -195,6 +182,27 @@ export default function MyOrders() {
   // if (!user || !token) {
   //   return null;
   //}
+  if (!user || !token) {
+    return (
+      <div className="min-h-screen bg-gray-50 py-8">
+        <div className="max-w-7xl mx-auto px-4 text-center">
+          <i className="fas fa-lock text-4xl text-gray-400 mb-4"></i>
+          <p className="text-lg font-semibold text-gray-900 mb-2">
+            Acesso Restrito
+          </p>
+          <p className="text-gray-600 mb-6">
+            Você precisa estar logado para ver seus pedidos
+          </p>
+          <Link
+            to="/login"
+            className="inline-block bg-primary text-white px-6 py-2 rounded-lg hover:bg-red-700"
+          >
+            Fazer Login
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-gray-50 py-8">
