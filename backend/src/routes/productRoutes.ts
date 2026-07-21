@@ -5,6 +5,9 @@ import {
   createProduct,
   updateProduct,
   deleteProduct,
+  getBestRatedProducts,
+  getBestSellersProducts,
+  getFeaturedProducts,
 } from "../controllers/productController";
 import authMiddleware from "../middleware/auth";
 import adminMiddleware from "../middleware/adminMiddleware";
@@ -12,6 +15,22 @@ import { PrismaClient } from "@prisma/client"; // 🚗 NOVO
 
 const router = Router();
 const prisma = new PrismaClient(); // 🚗 NOVO
+
+// ========================================
+// 🌟 PRODUTOS DESTAQUE
+// ========================================
+
+// GET /api/products/best-rated
+// Produtos com melhor avaliação
+router.get("/best-rated", getBestRatedProducts);
+
+// GET /api/products/best-sellers
+// Produtos mais vendidos
+router.get("/best-sellers", getBestSellersProducts);
+
+// GET /api/products/featured
+// Produtos em destaque (com desconto)
+router.get("/featured", getFeaturedProducts);
 
 // ========================================
 // 🔓 ROTAS PÚBLICAS (sem autenticação)
