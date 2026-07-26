@@ -391,3 +391,226 @@ export const deleteProduct = async (
     });
   }
 };
+
+// ========================================
+// 🌟 PRODUTOS DESTAQUE (ADICIONE ESSAS 3 FUNÇÕES)
+// ========================================
+
+/**
+ * GET /api/products/best-rated
+ * Produtos com melhor avaliação (reviews)
+ */
+export const getBestRatedProducts = async (req: Request, res: Response) => {
+  try {
+    const { limit = 8 } = req.query;
+
+    const products = await prisma.product.findMany({
+      include: {
+        category: true,
+        reviews: {
+          select: { rating: true },
+        },
+      },
+      orderBy: {
+        reviews: {
+          _count: "desc",
+        },
+      },
+      take: parseInt(limit as string) || 8,
+    });
+
+    // Calcular média de ratings
+    const productsWithRating = products
+      .map((product) => {
+        const avgRating =
+          product.reviews.length > 0
+            ? (
+                product.reviews.reduce((sum, r) => sum + r.rating, 0) /
+                product.reviews.length
+              ).toFixed(1)
+            : 0;
+
+        return {
+          ...product,
+          averageRating: parseFloat(avgRating as string),
+          totalReviews: product.reviews.length,
+          reviews: undefined, // Remover array de reviews
+        };
+      })
+      .sort((a, b) => b.averageRating - a.averageRating)
+      .slice(0, parseInt(limit as string) || 8);
+
+    console.log(
+      `⭐ ${productsWithRating.length} produtos com melhor avaliação`,
+    );
+
+    res.json({
+      success: true,
+      data: productsWithRating,
+      message: "Produtos destaque carregados",
+    });
+  } catch (error) {
+    console.error("❌ Erro ao buscar produtos destaque:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro ao buscar produtos destaque",
+      error: error instanceof Error ? error.message : "Desconhecido",
+    });
+  }
+};
+
+/**
+ * GET /api/products/best-sellers
+ * Produtos mais vendidos (mais pedidos PAID/DELIVERED)
+ */
+export const getBestSellersProducts = async (req: Request, res: Response) => {
+  try {
+    const { limit = 8 } = req.query;
+
+    // Buscar produtos mais vendidos
+    const topProducts = await prisma.orderItem.groupBy({
+      by: ["productId"],
+      _sum: {
+        quantity: true,
+      },
+      where: {
+        order: {
+          status: {
+            in: ["PAID", "DELIVERED"],
+          },
+        },
+      },
+      orderBy: {
+        _sum: {
+          quantity: "desc",
+        },
+      },
+      take: parseInt(limit as string) || 8,
+    });
+
+    // Buscar detalhes dos produtos
+    const productIds = topProducts
+      .map((p) => p.productId)
+      .filter((id): id is string => id !== null);
+    const products = await prisma.product.findMany({
+      where: {
+        id: { in: productIds },
+      },
+      include: {
+        category: true,
+        reviews: {
+          select: { rating: true },
+        },
+      },
+    });
+
+    // Montar resposta com quantidade vendida
+    const productsWithSales = products.map((product) => {
+      const salesData = topProducts.find((p) => p.productId === product.id);
+      const avgRating =
+        product.reviews.length > 0
+          ? (
+              product.reviews.reduce((sum, r) => sum + r.rating, 0) /
+              product.reviews.length
+            ).toFixed(1)
+          : 0;
+
+      return {
+        ...product,
+        totalSold: salesData?._sum.quantity || 0,
+        averageRating: parseFloat(avgRating as string),
+        totalReviews: product.reviews.length,
+        reviews: undefined,
+      };
+    });
+
+    console.log(
+      `🔥 ${productsWithSales.length} produtos mais vendidos encontrados`,
+    );
+
+    res.json({
+      success: true,
+      data: productsWithSales,
+      message: "Produtos mais vendidos carregados",
+    });
+  } catch (error) {
+    console.error("❌ Erro ao buscar produtos mais vendidos:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro ao buscar produtos mais vendidos",
+      error: error instanceof Error ? error.message : "Desconhecido",
+    });
+  }
+};
+
+/**
+ * GET /api/products/featured
+ * Produtos destacados (marcados como featured)
+ */
+export const getFeaturedProducts = async (req: Request, res: Response) => {
+  try {
+    const { limit = 6 } = req.query;
+
+    // Buscar 6 produtos aleatórios com desconto ou populares
+    const products = await prisma.product.findMany({
+      where: {
+        salePrice: {
+          not: null, // Produtos com desconto
+        },
+        stock: {
+          gt: 0, // Em estoque
+        },
+      },
+      include: {
+        category: true,
+        reviews: {
+          select: { rating: true },
+        },
+      },
+      orderBy: {
+        createdAt: "desc", // Mais recentes primeiro
+      },
+      take: parseInt(limit as string) || 6,
+    });
+
+    // Calcular média de ratings
+    const productsWithRating = products.map((product) => {
+      const avgRating =
+        product.reviews.length > 0
+          ? (
+              product.reviews.reduce((sum, r) => sum + r.rating, 0) /
+              product.reviews.length
+            ).toFixed(1)
+          : 0;
+
+      const discount = product.salePrice
+        ? Math.round(
+            ((product.price - product.salePrice) / product.price) * 100,
+          )
+        : 0;
+
+      return {
+        ...product,
+        discount,
+        averageRating: parseFloat(avgRating as string),
+        totalReviews: product.reviews.length,
+        reviews: undefined,
+      };
+    });
+
+    console.log(`✨ ${productsWithRating.length} produtos em destaque`);
+
+    res.json({
+      success: true,
+      data: productsWithRating,
+      message: "Produtos em destaque carregados",
+    });
+  } catch (error) {
+    console.error("❌ Erro ao buscar produtos em destaque:", error);
+    res.status(500).json({
+      success: false,
+      message: "Erro ao buscar produtos em destaque",
+      error: error instanceof Error ? error.message : "Desconhecido",
+    });
+  }
+};
