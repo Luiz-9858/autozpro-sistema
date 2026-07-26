@@ -17,7 +17,7 @@ const router = Router();
 const prisma = new PrismaClient(); // 🚗 NOVO
 
 // ========================================
-// 🌟 PRODUTOS DESTAQUE
+// 🌟 PRODUTOS DESTAQUE (ROTAS ESTÁTICAS)
 // ========================================
 
 // GET /api/products/best-rated
@@ -38,22 +38,6 @@ router.get("/featured", getFeaturedProducts);
 
 // GET /api/products - Listar todos os produtos (COM PAGINAÇÃO)
 router.get("/", getProducts);
-
-// GET /api/products/:id - Buscar produto por ID
-router.get("/:id", getProductById);
-
-// ========================================
-// 🔐 ROTAS PROTEGIDAS (admin apenas)
-// ========================================
-
-// POST /api/products - Criar novo produto (admin)
-router.post("/", authMiddleware, adminMiddleware, createProduct);
-
-// PUT /api/products/:id - Atualizar produto (admin)
-router.put("/:id", authMiddleware, adminMiddleware, updateProduct);
-
-// DELETE /api/products/:id - Deletar produto (admin)
-router.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
 
 // ========================================
 // 🚗 ROTAS DE VEÍCULOS (admin apenas)
@@ -177,5 +161,24 @@ router.get("/:id/vehicles", async (req, res) => {
     });
   }
 });
+
+// ========================================
+// 🔐 ROTAS PROTEGIDAS (admin apenas)
+// ========================================
+
+// POST /api/products - Criar novo produto (admin)
+router.post("/", authMiddleware, adminMiddleware, createProduct);
+
+// PUT /api/products/:id - Atualizar produto (admin)
+router.put("/:id", authMiddleware, adminMiddleware, updateProduct);
+
+// DELETE /api/products/:id - Deletar produto (admin)
+router.delete("/:id", authMiddleware, adminMiddleware, deleteProduct);
+
+// ==========================================
+// 🔓 ROTAS DINÂMICAS (admin)
+// ==========================================
+// GET /api/products/:id - Buscar produto por ID
+router.get("/:id", getProductById);
 
 export default router;
