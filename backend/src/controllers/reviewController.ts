@@ -3,7 +3,7 @@ import prisma from "../config/prisma";
 
 /**
  * ⭐ REVIEW CONTROLLER
- * Gerenciar as avaliações de produtos (corretamente)
+ * Gerenciar as avaliações de produtos (correto)
  */
 
 // ========================================
