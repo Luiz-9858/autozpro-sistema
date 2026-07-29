@@ -86,7 +86,7 @@ export const createReview = async (req: Request, res: Response) => {
       },
     });
 
-    // Criar avaliação
+    // Criar avaliação -
     const review = await prisma.review.create({
       data: {
         userId,
