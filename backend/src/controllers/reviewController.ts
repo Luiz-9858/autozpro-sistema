@@ -94,7 +94,7 @@ export const createReview = async (req: Request, res: Response) => {
         rating,
         title,
         comment,
-        verified: !!userOrder, // Verificado se comprou
+        verified: !!userOrder, // Verificado se Comprou
       },
       include: {
         user: {
