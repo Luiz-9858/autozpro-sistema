@@ -12,7 +12,7 @@ import ProductCarousel from "../components/ProductCarousel";
  * - icon: "fa-star" (ícone Font Awesome)
  * - badgeText: "TOP ⭐" (badge opcional)
  * - badgeColor: "bg-yellow-600" (cor do badge)
- * - limit: 8 (quantidade de produtos)
+ * - Limit: 8 (quantidade de produtos)
  */
 
 export default function BestRated() {
