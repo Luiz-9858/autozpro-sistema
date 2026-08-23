@@ -41,7 +41,7 @@ export default function ProductCarousel({
   const [loading, setLoading] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
-  // 2️⃣ FUNÇÃO: fetchProducts // 2️⃣ PRIMEIRO: Declarar fetchProducts
+  // 2️⃣ FUNÇÃO: fetchProducts // PRIMEIRO: Declarar fetchProducts
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
