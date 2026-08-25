@@ -36,12 +36,10 @@ export default function ProductCarousel({
   badgeColor = "bg-red-600",
   limit = 8,
 }: ProductCarouselProps) {
-  // 1️⃣ ESTADO: produtos, loading, imageErrors
   const [products, setProducts] = useState<CarouselProduct[]>([]);
   const [loading, setLoading] = useState(true);
   const [imageErrors, setImageErrors] = useState<Set<string>>(new Set());
 
-  // 2️⃣ FUNÇÃO: fetchProducts // PRIMEIRO: Declarar fetchProducts
   const fetchProducts = useCallback(async () => {
     try {
       setLoading(true);
@@ -64,7 +62,6 @@ export default function ProductCarousel({
     }
   }, [endpoint, limit]);
 
-  // 3️⃣ DEPOIS: Usar fetchProducts no useEffect
   useEffect(() => {
     fetchProducts();
   }, [fetchProducts]);
@@ -91,8 +88,8 @@ export default function ProductCarousel({
   const renderBadge = (product: CarouselProduct) => {
     if (product.discount && product.discount > 0) {
       return (
-        <div className="absolute top-2 right-2">
-          <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded">
+        <div className="absolute top-2 right-2 animate-fade-in">
+          <span className="bg-red-600 text-white text-xs font-bold px-2 py-1 rounded transform group-hover:scale-110 transition-transform duration-300">
             -{product.discount}%
           </span>
         </div>
@@ -101,8 +98,8 @@ export default function ProductCarousel({
 
     if (product.totalSold && product.totalSold > 0) {
       return (
-        <div className="absolute top-2 right-2">
-          <span className="bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded">
+        <div className="absolute top-2 right-2 animate-fade-in">
+          <span className="bg-orange-600 text-white text-xs font-bold px-2 py-1 rounded transform group-hover:scale-110 transition-transform duration-300">
             🔥 {product.totalSold}
           </span>
         </div>
@@ -111,8 +108,8 @@ export default function ProductCarousel({
 
     if (product.averageRating && product.averageRating >= 4.5) {
       return (
-        <div className="absolute top-2 right-2">
-          <span className="bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded">
+        <div className="absolute top-2 right-2 animate-fade-in">
+          <span className="bg-yellow-600 text-white text-xs font-bold px-2 py-1 rounded transform group-hover:scale-110 transition-transform duration-300">
             ⭐ {product.averageRating}
           </span>
         </div>
@@ -125,7 +122,7 @@ export default function ProductCarousel({
   // Loading Skeleton
   if (loading) {
     return (
-      <div className="py-8 md:py-12">
+      <div className="py-8 md:py-12 animate-fade-in">
         <div className="flex items-center gap-2 mb-6">
           <i className={`fas ${icon} text-2xl text-primary`}></i>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -152,7 +149,7 @@ export default function ProductCarousel({
   // Sem produtos
   if (products.length === 0) {
     return (
-      <div className="py-8 md:py-12 text-center">
+      <div className="py-8 md:py-12 text-center animate-fade-in">
         <div className="flex items-center justify-center gap-2 mb-4">
           <i className={`fas ${icon} text-2xl text-gray-400`}></i>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
@@ -165,17 +162,19 @@ export default function ProductCarousel({
   }
 
   return (
-    <div className="py-8 md:py-12">
+    <div className="py-8 md:py-12 animate-fade-in">
       {/* Header */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <i className={`fas ${icon} text-2xl md:text-3xl text-primary`}></i>
+          <i
+            className={`fas ${icon} text-2xl md:text-3xl text-primary animate-bounce`}
+          ></i>
           <h2 className="text-2xl md:text-3xl font-bold text-gray-900">
             {title}
           </h2>
           {badgeText && (
             <span
-              className={`${badgeColor} text-white text-xs px-2 py-1 rounded`}
+              className={`${badgeColor} text-white text-xs px-2 py-1 rounded animate-pulse`}
             >
               {badgeText}
             </span>
@@ -183,7 +182,7 @@ export default function ProductCarousel({
         </div>
         <Link
           to="/products"
-          className="text-primary hover:text-red-700 text-sm font-medium flex items-center gap-1"
+          className="text-primary hover:text-red-700 text-sm font-medium flex items-center gap-1 transition-all duration-300 hover:gap-2"
         >
           Ver todos <i className="fas fa-arrow-right"></i>
         </Link>
@@ -191,11 +190,12 @@ export default function ProductCarousel({
 
       {/* Grid Responsivo */}
       <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
-        {products.map((product) => (
+        {products.map((product, index) => (
           <Link
             key={product.id}
             to={`/product/${product.id}`}
-            className="group bg-white rounded-lg shadow hover:shadow-lg transition overflow-hidden"
+            className="group bg-white rounded-lg shadow hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105 hover:-translate-y-1"
+            style={{ animationDelay: `${index * 50}ms` }}
           >
             {/* Imagem */}
             <div className="relative bg-gray-100 overflow-hidden h-40 md:h-48">
@@ -207,7 +207,7 @@ export default function ProductCarousel({
                 }
                 alt={product.name}
                 onError={() => handleImageError(product.id)}
-                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
               />
 
               {/* Badge */}
@@ -215,7 +215,7 @@ export default function ProductCarousel({
 
               {/* Estoque */}
               {product.stock === 0 && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center">
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center backdrop-blur-sm">
                   <span className="bg-gray-900 text-white px-2 py-1 rounded text-xs font-bold">
                     ESGOTADO
                   </span>
@@ -224,20 +224,20 @@ export default function ProductCarousel({
             </div>
 
             {/* Info */}
-            <div className="p-3 md:p-4">
+            <div className="p-3 md:p-4 transition-all duration-300">
               {/* Categoria */}
-              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1">
+              <p className="text-xs text-gray-500 uppercase tracking-wide mb-1 group-hover:text-primary transition-colors duration-300">
                 {product.category.name}
               </p>
 
               {/* Nome */}
-              <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-2">
+              <h3 className="text-sm font-semibold text-gray-900 line-clamp-2 mb-2 group-hover:text-primary transition-colors duration-300">
                 {product.name}
               </h3>
 
               {/* Rating */}
               {product.averageRating !== undefined && (
-                <div className="flex items-center gap-1 mb-2">
+                <div className="flex items-center gap-1 mb-2 group-hover:scale-110 transform transition-transform duration-300 origin-left">
                   {renderStars(product.averageRating)}
                   <span className="text-xs text-gray-600">
                     ({product.totalReviews || 0})
@@ -249,15 +249,15 @@ export default function ProductCarousel({
               <div className="mb-3">
                 {product.salePrice ? (
                   <>
-                    <p className="text-xs text-gray-500 line-through">
+                    <p className="text-xs text-gray-500 line-through group-hover:text-gray-400 transition-colors duration-300">
                       R$ {product.price.toFixed(2)}
                     </p>
-                    <p className="text-lg font-bold text-primary">
+                    <p className="text-lg font-bold text-primary group-hover:text-red-700 transition-colors duration-300">
                       R$ {product.salePrice.toFixed(2)}
                     </p>
                   </>
                 ) : (
-                  <p className="text-lg font-bold text-gray-900">
+                  <p className="text-lg font-bold text-gray-900 group-hover:text-primary transition-colors duration-300">
                     R$ {product.price.toFixed(2)}
                   </p>
                 )}
@@ -266,7 +266,7 @@ export default function ProductCarousel({
               {/* Botão */}
               <button
                 disabled={product.stock === 0}
-                className="w-full bg-primary text-white py-2 rounded text-sm font-medium hover:bg-red-700 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full bg-primary text-white py-2 rounded text-sm font-medium hover:bg-red-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform active:scale-95 hover:shadow-lg"
               >
                 <i className="fas fa-shopping-cart mr-1"></i>
                 Comprar
