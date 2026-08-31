@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import ReviewStats from "../components/ReviewStats";
 import ProductReviews from "../sections/ProductReviews";
+import RelatedProducts from "../components/RelatedProducts";
 import { productService } from "../services/api";
 import type { Product } from "../services/api";
 import AddToCartButton from "../components/AddToCartButton";
@@ -590,8 +592,33 @@ export default function ProductDetail() {
           </div>
         </div>
 
-        {/* Seção de Avaliações */}
-        <ProductReviews productId={product.id} />
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {/* REVIEW STATS + COMMENTS */}
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <div className="mt-12 mb-12 bg-white rounded-lg shadow-sm p-4 md:p-6">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            {/* Stats */}
+            <div className="md:col-span-1">
+              <ReviewStats productId={product.id} />
+            </div>
+
+            {/* Reviews */}
+            <div className="md:col-span-2">
+              <ProductReviews productId={product.id} />
+            </div>
+          </div>
+        </div>
+
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        {/* RELATED PRODUCTS */}
+        {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
+        <div className="mt-12 bg-white rounded-lg shadow-sm p-4 md:p-6">
+          <RelatedProducts
+            productId={product.id}
+            categoryId={product.category.id}
+            limit={6}
+          />
+        </div>
       </div>
     </div>
   );
