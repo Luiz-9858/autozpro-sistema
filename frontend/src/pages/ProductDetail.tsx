@@ -596,7 +596,7 @@ export default function ProductDetail() {
         {/* REVIEW STATS + COMMENTS */}
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div className="mt-12 mb-12 bg-white rounded-lg shadow-sm p-4 md:p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Stats */}
             <div className="md:col-span-1">
               <ReviewStats productId={product.id} />
