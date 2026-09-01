@@ -194,7 +194,7 @@ export default function ProductCarousel({
           <Link
             key={product.id}
             to={`/product/${product.id}`}
-            className="group bg-white rounded-lg shadow hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-105 hover:-translate-y-1"
+            className="group bg-white rounded-lg shadow hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-103"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             {/* Imagem */}
