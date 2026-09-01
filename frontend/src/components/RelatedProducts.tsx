@@ -130,7 +130,7 @@ export default function RelatedProducts({
           <Link
             key={product.id}
             to={`/product/${product.id}`}
-            className="group bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-105 hover:-translate-y-1"
+            className="group bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-104 hover:-translate-y-1"
             style={{ animationDelay: `${index * 50}ms` }}
           >
             {/* Imagem */}
