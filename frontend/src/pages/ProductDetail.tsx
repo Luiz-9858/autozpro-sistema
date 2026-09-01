@@ -610,7 +610,7 @@ export default function ProductDetail() {
         </div>
 
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
-        {/* RELATED PRODUCTS */}
+        {/* RELATED * PRODUCTS */}
         {/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */}
         <div className="mt-12 bg-white rounded-lg shadow-sm p-4 md:p-6">
           <RelatedProducts
