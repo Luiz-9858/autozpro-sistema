@@ -45,6 +45,8 @@ model User {
 
   reviews   Review[]
 
+  favorites Favorite[]
+
   @@map("users")
 }
 
@@ -84,6 +86,8 @@ model Product {
 
   orderItems OrderItem[]
   vehicles   ProductVehicle[]
+
+  favorites Favorite[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
@@ -249,4 +253,20 @@ model Review {
   @@unique([userId, productId])
   @@index([productId])
   @@index([userId])
+}
+
+model Favorite {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  @@unique([userId, productId])  // Um usuário = um favorito por produto
+  @@index([userId])
+  @@index([productId])
 }
