@@ -90,7 +90,7 @@ const Footer = () => {
             </ul>
           </div>
 
-          {/* Coluna 4: Catálogos */}
+          {/* Coluna 4: Catálogos four catalogs */}
           <div className="text-center sm:text-left">
             <h4 className="font-semibold mb-3 md:mb-4 text-secondary text-sm md:text-base">
               CATÁLOGOS
