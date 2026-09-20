@@ -13,7 +13,7 @@ import orderRoutes from "./routes/orderRoutes";
 import reviewRoutes from "./routes/reviewRoutes"; // ← ADICIONAR
 import favoritesRoutes from "./routes/favoritesRoutes";
 
-// Carregar variáveis de ambiente
+// Carregar variáveis de ambiente *
 dotenv.config();
 
 const app = express();

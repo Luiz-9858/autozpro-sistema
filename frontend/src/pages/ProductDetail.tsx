@@ -6,6 +6,7 @@ import RelatedProducts from "../components/RelatedProducts";
 import { productService } from "../services/api";
 import type { Product } from "../services/api";
 import AddToCartButton from "../components/AddToCartButton";
+import FavoriteButton from "../components/FavoriteButton";
 
 // 🚗 NOVO: Tipo para veículo
 interface Vehicle {
@@ -338,6 +339,16 @@ export default function ProductDetail() {
                   sem juros
                 </p>
               )}
+            </div>
+
+            {/* Botão Favoritar */}
+            <div className="mb-4 md:mb-6">
+              <FavoriteButton
+                productId={product.id}
+                variant="button"
+                showText={true}
+                size="md"
+              />
             </div>
 
             {/* Estoque */}
