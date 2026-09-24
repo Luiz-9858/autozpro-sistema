@@ -8,7 +8,7 @@ import type { Product } from "../services/api";
 import AddToCartButton from "../components/AddToCartButton";
 import FavoriteButton from "../components/FavoriteButton";
 
-// 🚗 NOVO: Tipo para veículo
+// 🚗 NOVO: Tipo para  - veículo
 interface Vehicle {
   id: string;
   brand: string;
