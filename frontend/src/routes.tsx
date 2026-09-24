@@ -17,6 +17,7 @@ import ProductDetail from "./pages/ProductDetail";
 import Cart from "./pages/Cart";
 import Checkout from "./pages/Checkout"; // 💳 NOVO
 import OrderSuccess from "./pages/OrderSuccess"; // ✅ NOVO
+import FavoritesPage from "./pages/FavoritesPage";
 
 // Admin Pages
 import AdminDashboard from "./pages/AdminDashboard";
@@ -188,6 +189,18 @@ export default function AppRoutes() {
           <PublicLayout>
             <ProtectedRoute>
               <Dashboard />
+            </ProtectedRoute>
+          </PublicLayout>
+        }
+      />
+
+      {/* 🤍 ROTA DE FAVORITOS - PROTEGIDA */}
+      <Route
+        path="/favorites"
+        element={
+          <PublicLayout>
+            <ProtectedRoute>
+              <FavoritesPage />
             </ProtectedRoute>
           </PublicLayout>
         }
