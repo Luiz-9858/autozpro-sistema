@@ -129,7 +129,7 @@ export default function RelatedProducts({
         {products.map((product, index) => (
           <Link
             key={product.id}
-            to={`/product/${product.id}`}
+            to={`/products/${product.id}`}
             className="group bg-white rounded-lg shadow hover:shadow-lg transition-all duration-300 overflow-hidden transform hover:scale-104 hover:-translate-y-1"
             style={{ animationDelay: `${index * 50}ms` }}
           >
