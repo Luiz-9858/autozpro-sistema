@@ -344,6 +344,7 @@ export default function ProductDetail() {
             {/* Botão Favoritar */}
             <div className="mb-4 md:mb-6">
               <FavoriteButton
+                key={product.id}
                 productId={product.id}
                 variant="button"
                 showText={true}
