@@ -1,6 +1,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { Link } from "react-router-dom";
 import toast from "react-hot-toast";
+import FavoriteButton from "./FavoriteButton";
 
 interface CarouselProduct {
   id: string;
@@ -193,7 +194,7 @@ export default function ProductCarousel({
         {products.map((product, index) => (
           <Link
             key={product.id}
-            to={`/product/${product.id}`}
+            to={`/products/${product.id}`}
             className="group bg-white rounded-lg shadow hover:shadow-2xl transition-all duration-300 overflow-hidden transform hover:scale-103"
             style={{ animationDelay: `${index * 50}ms` }}
           >
@@ -261,6 +262,15 @@ export default function ProductCarousel({
                     R$ {product.price.toFixed(2)}
                   </p>
                 )}
+              </div>
+
+              {/* Botão Favoritar */}
+              <div className="mb-3">
+                <FavoriteButton
+                  productId={product.id}
+                  variant="icon"
+                  size="md"
+                />
               </div>
 
               {/* Botão */}
