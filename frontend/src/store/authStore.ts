@@ -157,12 +157,12 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   // 🔍 VERIFICAR AUTENTICAÇÃO (ao carregar app)
   checkAuth: () => {
+    console.log("🔍 [checkAuth] Verificando autenticação...");
     const token = localStorage.getItem("token");
     const userStr = localStorage.getItem("user");
 
-    console.log("🔍 Verificando autenticação...");
-    console.log("   Token:", token ? "existe" : "não existe");
-    console.log("   User:", userStr ? "existe" : "não existe");
+    console.log("📦 [checkAuth] Token encontrado?", !!token);
+    console.log("📦 [checkAuth] User encontrado?", !!userStr);
 
     if (token && userStr) {
       try {
