@@ -1,4 +1,4 @@
-# 📚 Documentação - B77 Auto Parts Sistema E-commerce
+# 📚 Documentação - B77 Auto Parts Sistema E-commerce.
 
 Bem-vindo à documentação completa do sistema de e-commerce de auto peças para veículos leves e pesados.
 
@@ -11,7 +11,6 @@ Bem-vindo à documentação completa do sistema de e-commerce de auto peças par
 Documentação completa da API REST e lógica de negócio.
 
 - **[API Endpoints](./backend/api/)** - Todas as rotas e endpoints
-
   - [Autenticação](./backend/api/authentication.md)
   - [Produtos](./backend/api/products.md)
   - [Pedidos](./backend/api/orders.md)
@@ -19,14 +18,12 @@ Documentação completa da API REST e lógica de negócio.
   - [Usuários](./backend/api/users.md)
 
 - **[Banco de Dados](./backend/database/)** - Estrutura e relacionamentos
-
   - [Schema](./backend/database/schema.md)
   - [Relacionamentos](./backend/database/relationships.md)
   - [Queries Úteis](./backend/database/queries.md)
   - [Migrations](./backend/database/migrations.md)
 
 - **[Guias](./backend/guides/)** - Tutoriais e configurações
-
   - [Instalação](./backend/guides/installation.md)
   - [Configuração](./backend/guides/configuration.md)
   - [Regras de Negócio](./backend/guides/business-rules.md)
@@ -43,17 +40,14 @@ Documentação completa da API REST e lógica de negócio.
 Documentação da interface React + TypeScript + Tailwind.
 
 - **[Componentes](./frontend/components/)** - Componentes reutilizáveis
-
   - [Visão Geral](./frontend/components/overview.md)
   - [Lista de Componentes](./frontend/components/component-list.md)
 
 - **[Páginas](./frontend/pages/)** - Estrutura de rotas
-
   - [Rotas](./frontend/pages/routes.md)
   - [Estrutura de Páginas](./frontend/pages/page-structure.md)
 
 - **[Guias](./frontend/guides/)** - Tutoriais frontend
-
   - [Instalação](./frontend/guides/installation.md)
   - [Estilização (Tailwind)](./frontend/guides/styling.md)
   - [Gerenciamento de Estado](./frontend/guides/state-management.md)
@@ -69,12 +63,10 @@ Documentação da interface React + TypeScript + Tailwind.
 Representações visuais do sistema.
 
 - **[Sistema Geral](./diagrams/system/)**
-
   - Arquitetura Completa
   - Fluxo de Usuário
 
 - **[Backend](./diagrams/backend/)**
-
   - Diagrama ER (Banco de Dados)
   - Fluxo de API
 
